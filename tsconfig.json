@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "isolatedModules": true,
+    "noEmit": true,
+    "allowSyntheticDefaultImports": true
+  },
+  "include": [
+    "src",
+    "test"
+  ],
+  "ts-node": {
+    "transpileOnly": true,
+    "files": true,
+  },
+}
