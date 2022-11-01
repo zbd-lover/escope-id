@@ -1,4 +1,5 @@
 import { traverse } from 'estraverse'
+import { ObjectExpression, ObjectPattern } from 'estree'
 import Scope, { NodeWithScope, IdScope, IdType, IdentifierInScope } from './scope'
 
 export {
@@ -175,36 +176,36 @@ export default function parse(block: NodeWithScope) {
               }
               break
             case 'ExportDefaultDeclaration':
-              if (parent.declaration === node && cs) {
-                const type: IdType =
-                  cs.hasLocalId(node.name, 'function')
-                    ? 'function'
-                    : cs.hasLocalId(node.name, 'variable')
-                      ? 'variable'
-                      : 'unknown'
-                if (type === 'variable' || type === 'function') {
-                  addIdIntoCurrentScope({
-                    name: node.name,
-                    scope: 'local',
-                    type,
-                    exported: true,
-                    imported: false
-                  })
-                }
+              if (parent.declaration === node) {
+                addIdIntoCurrentScope({
+                  name: node.name,
+                  scope: 'ancestral',
+                  type: 'unknown',
+                  exported: true,
+                  imported: false
+                })
               }
               break
             case 'ExportSpecifier':
+              if (parent.exported === node) {
+                addIdIntoCurrentScope({
+                  name: node.name,
+                  scope: 'unreachable',
+                  type: 'variable',
+                  exported: true,
+                  imported: false
+                })
+              }
+              break
             case 'ExportAllDeclaration':
               if (parent.exported === node) {
-                if (idTypeContext === 'function' || idTypeContext === 'variable') {
-                  addIdIntoCurrentScope({
-                    name: node.name,
-                    scope: 'local',
-                    type: idTypeContext,
-                    exported: true,
-                    imported: false
-                  })
-                }
+                addIdIntoCurrentScope({
+                  name: node.name,
+                  scope: 'local',
+                  type: 'variable',
+                  exported: true,
+                  imported: false
+                })
               }
               break
             case 'VariableDeclarator':
@@ -291,23 +292,26 @@ export default function parse(block: NodeWithScope) {
               }
               break
             case 'Property':
-              if (parent.key === node) {
-                const parents = this.parents()
-                if (parents[parents.length - 1]?.type === 'ObjectPattern') {
-                  if (idTypeContext === 'argument' || idTypeContext === 'variable') {
-                    addIdIntoCurrentScope({
-                      name: node.name,
-                      scope: 'local',
-                      type: idTypeContext,
-                      exported: false,
-                      imported: false
-                    })
-                  } else if (parent.computed) {
-                    tryAddAncestralId(node.name)
-                  }
-                }
+              const parents = this.parents().reverse()
+              const contextNode = parents.find((id) => id.type === 'ObjectExpression' || id.type === 'ObjectPattern') as (ObjectPattern | ObjectExpression | undefined)
+              if (contextNode?.type === 'ObjectExpression' && parent.value === node) {
+                tryAddAncestralId(node.name)
                 break
               }
+              if (
+                contextNode?.type === 'ObjectPattern' &&
+                parent.value === node &&
+                (idTypeContext === 'argument' || idTypeContext === 'variable')
+              ) {
+                addIdIntoCurrentScope({
+                  name: node.name,
+                  scope: 'local',
+                  type: idTypeContext,
+                  exported: false,
+                  imported: false
+                })
+              }
+              break
             default:
               if (!cs || !cs.hasUnreachableId(node.name)) {
                 tryAddAncestralId(node.name)

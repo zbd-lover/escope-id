@@ -5,12 +5,10 @@ import {
   ForStatement,
   BlockStatement,
   Function,
-  DoWhileStatement,
-  WhileStatement,
   Program,
   SwitchStatement,
-  IfStatement,
-  CatchClause
+  CatchClause,
+  WithStatement
 } from 'estree'
 
 export type IdScope = 'local' | 'ancestral' | 'unreachable'
@@ -36,7 +34,7 @@ interface AncestralId extends BaseIdentifierInScope {
 
 interface UnreachableId extends BaseIdentifierInScope {
   scope: 'unreachable'
-  type: 'function'
+  type: 'function' | 'variable'
 }
 
 interface LocalVariableId extends BaseLocalId {
@@ -66,13 +64,11 @@ export type NodeWithScope = ForStatement |
   ForInStatement |
   ForOfStatement |
   Function |
-  WhileStatement |
-  DoWhileStatement |
   BlockStatement |
   SwitchStatement |
-  IfStatement |
   CatchClause |
-  Program
+  Program |
+  WithStatement
 
 export default class Scope {
   public node: NodeWithScope
@@ -103,25 +99,32 @@ export default class Scope {
         id.imported === imported &&
         id.exported === exported
     })) return
-    if (hoisted) {
-      const index = this.identifiers.findIndex((id) => id.scope === 'ancestral' && id.name === name)
+
+    if (exported && type === 'unknown' && scope === 'ancestral') {
+      const index = this.identifiers.findIndex((id) => 
+        id.name === name && 
+        (id.scope === 'local' || id.scope === 'ancestral') &&
+        !id.exported
+      )
       if (index >= 0) {
+        this.identifiers[index].exported = true
+      } else {
+        this.identifiers.push(id)
+      }
+    } else if (scope === 'local' && (type === 'variable' || type === 'function')) {
+      const index = this.identifiers.findIndex((id) => 
+        id.name === name &&
+        // id.exported &&
+        id.scope === 'ancestral' && id.type === 'unknown'
+      )
+      if (index >= 0 && (this.identifiers[index].exported || exported || hoisted)) {
+        id.exported = this.identifiers[index].exported
         this.identifiers.splice(index, 1)
       }
+      this.identifiers.push(id)
+    } else {
+      this.identifiers.push(id)
     }
-    if (exported) {
-      const index = this.identifiers.findIndex((_id) => {
-        return _id.name === name &&
-          _id.scope === 'local' &&
-          _id.type === id.type &&
-          !_id.exported
-      })
-      if (index >= 0) {
-        this.identifiers[index] = id
-        return
-      }
-    }
-    this.identifiers.push(id)
   }
 
   // tools
