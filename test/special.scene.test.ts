@@ -170,4 +170,33 @@ describe('test of lang feature', () => {
     }
     expect(res.identifiers[0]).toEqual(target)
   })
+
+  test('template str', () => {
+    const script = "const var1 = 10;const str = `${var1}_${g_var1}`"
+    const res = parseScript(script)
+    const target: IdentifierInScope[] = [
+      {
+        name: 'var1',
+        type: 'variable',
+        scope: 'local',
+        imported: false,
+        exported: false
+      },
+      {
+        name: 'str',
+        type: 'variable',
+        scope: 'local',
+        imported: false,
+        exported: false
+      },
+      {
+        name: 'g_var1',
+        type: 'unknown',
+        scope: 'ancestral',
+        imported: false,
+        exported: false
+      },
+    ]
+    expect(res.identifiers).toEqual(target)
+  })
 })
