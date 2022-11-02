@@ -51,13 +51,6 @@ describe('unreachable identifier test', () => {
       }
     `
     const res = parseScript(script)
-    const target1: IdentifierInScope = {
-      name: 'fn1',
-      scope: 'local',
-      type: 'variable',
-      imported: false,
-      exported: false
-    }
     const target2: IdentifierInScope[] = [
       {
         name: 'console',
@@ -74,7 +67,33 @@ describe('unreachable identifier test', () => {
         exported: false
       }
     ]
-    expect(res.identifiers).toEqual([target1])
+    expect(res.children[0].identifiers).toEqual(target2)
+  })
+
+  test('named function expression', () => {
+    const script = `
+      const fn1 = function fn1() {
+        const fn1 = () => {}
+        console.log(fn1)
+      }
+    `
+    const res = parseScript(script)
+    const target2: IdentifierInScope[] = [
+      {
+        name: 'fn1',
+        scope: 'local',
+        type: 'variable',
+        imported: false,
+        exported: false
+      },
+      {
+        name: 'console',
+        scope: 'ancestral',
+        type: 'unknown',
+        imported: false,
+        exported: false
+      },
+    ]
     expect(res.children[0].identifiers).toEqual(target2)
   })
 })
