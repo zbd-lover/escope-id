@@ -266,4 +266,17 @@ describe('ancestral identifier test', () => {
     ]
     expect(res.identifiers.filter(filter).map(map)).toEqual(target)
   })
+
+  test('super class', () => {
+    const script = `class A extends B {}`
+    const target: IdentifierInScope = {
+      name: 'B',
+      type: 'unknown',
+      scope: 'ancestral',
+      imported: false,
+      exported: false
+    }
+    const res = parseScript(script)
+    expect(res.identifiers.filter(filter)).toEqual([target])
+  })
 })

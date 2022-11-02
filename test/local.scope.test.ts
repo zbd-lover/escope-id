@@ -305,6 +305,28 @@ describe('local class test', () => {
     expect(res.children[0].identifiers.map(map)).toEqual(target)
   })
 
+  test('super class', () => {
+    const script = `class B {} class A extends B {}`
+    const target: IdentifierInScope[] = [
+      {
+        name: 'B',
+        type: 'class',
+        scope: 'local',
+        imported: false,
+        exported: false
+      },
+      {
+        name: 'A',
+        type: 'class',
+        scope: 'local',
+        imported: false,
+        exported: false
+      },
+    ]
+    const res = parseScript(script)
+    expect(res.identifiers).toEqual(target)
+  })
+
   test('export class declaration directly', () => {
     const script = `export class A {}`
     const res = parseModule(script)
@@ -332,4 +354,49 @@ describe('local class test', () => {
   })
 })
 
-// describe('local argument test')
+describe('local argument test', () => {
+  test('function argument', () => {
+    const script = `function test(a, b, { c }) {}`
+    const target: PartialIdentifierInScope1[] = [
+      {
+        name: 'a',
+        type: 'argument',
+        scope: 'local'
+      },
+      {
+        name: 'b',
+        type: 'argument',
+        scope: 'local'
+      },
+      {
+        name: 'c',
+        type: 'argument',
+        scope: 'local'
+      },
+    ]
+    const res = parseScript(script)
+    expect(res.children[0].identifiers.map(map)).toEqual(target)
+  })
+
+  test('catch clause argument, 1', () => {
+    const script = `try {} catch(err) {} finally {}`
+    const target: PartialIdentifierInScope1 = {
+      name: 'err',
+      type: 'argument',
+      scope: 'local'
+    }
+    const res = parseScript(script)
+    expect(res.children[1].identifiers.map(map)).toEqual([target])
+  })
+
+  test('catch clause argument, 2', () => {
+    const script = `try {} catch({ a }) {} finally {}`
+    const target: PartialIdentifierInScope1 = {
+      name: 'a',
+      type: 'argument',
+      scope: 'local'
+    }
+    const res = parseScript(script)
+    expect(res.children[1].identifiers.map(map)).toEqual([target])
+  })
+})
