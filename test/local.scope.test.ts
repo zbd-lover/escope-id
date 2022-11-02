@@ -4,7 +4,7 @@ import { parseModule, parseScript } from "./helpers/parse";
 
 type PartialIdentifierInScope1 = Omit<IdentifierInScope, 'imported' | 'exported'>
 
-const map1 = ({ name, scope, type }: IdentifierInScope) => {
+const map = ({ name, scope, type }: IdentifierInScope) => {
   return {
     name,
     scope,
@@ -12,7 +12,7 @@ const map1 = ({ name, scope, type }: IdentifierInScope) => {
   }
 }
 
-describe('local identifier test', () => {
+describe('local varialbe test', () => {
   test('import variable', () => {
     const script = `
       import { var1, var3 as var4 } from 'moduleA'
@@ -81,11 +81,11 @@ describe('local identifier test', () => {
         type: 'variable'
       },
     ]
-    const identifiers = res.identifiers.map(map1)
+    const identifiers = res.identifiers.map(map)
     expect(identifiers).toEqual(target)
   })
 
-  test('deconstruction declarataion base on object pattern', () => {
+  test('deconstruction declarataion bases on object pattern', () => {
     const script = `
       const user = {}
       const {
@@ -111,28 +111,13 @@ describe('local identifier test', () => {
 
         ...rest3
       } = user
-
-      // object-expressoin and object-patten have 'Property', a child node,
-      // the parser should distinguish them.
-      const obj = {
-        key1: key1,
-        key0: globalValue4,
-        name: 1,
-        age: 1,
-        innerObj: {
-          key1: key1,
-          key0: globalValue4,
-          name: 1,
-          age: 1,
-        }
-      }
     `
     const res = parseScript(script)
     const target: PartialIdentifierInScope1[] = [
       'user', 'key1', 'key2', 'key3', 'key4',
       'key5', 'key6', 'key7', 'key8', 'key9',
       'key10', 'key11', 'key12', 'rest1', 'rest2',
-      'rest3', 'obj'
+      'rest3'
     ]
       .map((item) => {
         return {
@@ -141,88 +126,51 @@ describe('local identifier test', () => {
           type: 'variable'
         }
       })
-    // 4 is the number of ancestral variables('globalValue1', 'globalValue2', 'globalValue3', 'globalValue4')
-    expect(res.identifiers.length).toBe(target.length + 4)
-    expect(res.identifiers.map(map1).filter((id) => id.scope === 'local')).toEqual(target)
+    expect(res.identifiers.map(map).filter((id) => id.scope === 'local')).toEqual(target)
   })
 
-  test('function declarataion will as local identifier', () => {
-    const script = `function a() {}`
-    const res = parseScript(script)
-    const target: PartialIdentifierInScope1 = {
-      name: 'a',
-      scope: 'local',
-      type: 'function',
-    }
-    expect(res.identifiers.map(map1)[0]).toEqual(target)
-  })
-
-  test('function expression will not as local identifier', () => {
-    const script = `const fn1 = function fn1() {}`
-    const res = parseScript(script)
-    const target: PartialIdentifierInScope1 = {
-      name: 'fn1',
-      scope: 'local',
-      type: 'variable',
-    }
-    expect(res.identifiers.map(map1)[0]).toEqual(target)
-  })
-
-  test('arrow function expression will not as local identifier', () => {
-    const script = `const fn1 =  () => {}`
-    const res = parseScript(script)
-    const target: PartialIdentifierInScope1 = {
-      name: 'fn1',
-      scope: 'local',
-      type: 'variable',
-    }
-    expect(res.identifiers.map(map1)[0]).toEqual(target)
-  })
-
-  test('export named identifier', () => {
+  test('deconstruction declarataion bases on array pattern', () => {
     const script = `
-      let var1, var2
-      export {
-        var1,
-        var2 as var3
-      }
-    `
-    const res = parseModule(script)
-    const target: IdentifierInScope[] = [
-      {
-        name: 'var1',
-        scope: 'local',
-        type: 'variable',
-        imported: false,
-        exported: false
-      },
-      {
-        name: 'var2',
-        scope: 'local',
-        type: 'variable',
-        imported: false,
-        exported: false
-      },
-      {
-        name: 'var1',
-        scope: 'unreachable',
-        type: 'variable',
-        imported: false,
-        exported: true
-      },
-      {
-        name: 'var3',
-        scope: 'unreachable',
-        type: 'variable',
-        imported: false,
-        exported: true
-      },
-    ]
-    expect(res.identifiers).toEqual(target)
-  })
+      const user = []
+      const [
+        key1,
+        key2 = key1,
+        key3 = globalValue1,
 
-  // estraverse don't support " export * as Test from 'moduleA' "
-  // test('export all declaration', () => {})
+        [
+          key4,
+          key5 = key4,
+          key6 = globalValue2,
+          
+          [
+            key7,
+            key8 = key7,
+            key9 = globalValue3,
+            ...rest1
+          ],
+          ...[
+            key10,
+            key11
+          ]
+        ],
+        ...rest2
+      ] = user
+    `
+    const res = parseScript(script)
+    const target: PartialIdentifierInScope1[] = [
+      'user', 'key1', 'key2', 'key3', 'key4',
+      'key5', 'key6', 'key7', 'key8', 'key9',
+      'rest1', 'key10', 'key11', 'rest2',
+    ]
+      .map((item) => {
+        return {
+          name: item,
+          scope: 'local',
+          type: 'variable'
+        }
+      })
+    expect(res.identifiers.map(map).filter((id) => id.scope === 'local')).toEqual(target)
+  })
 
   test('export variable declarataion directly', () => {
     const script = `export let var4 = 10`
@@ -234,7 +182,42 @@ describe('local identifier test', () => {
       imported: false,
       exported: true
     }
-    expect(res.identifiers[0]).toEqual(target)
+    expect(res.identifiers).toEqual([target])
+  })
+})
+
+describe('local function test', () => {
+  test('function declarataion will as local identifier', () => {
+    const script = `function a() {}`
+    const res = parseScript(script)
+    const target: PartialIdentifierInScope1 = {
+      name: 'a',
+      scope: 'local',
+      type: 'function',
+    }
+    expect(res.identifiers.map(map)).toEqual([target])
+  })
+
+  test('function expression will not as local identifier', () => {
+    const script = `const fn1 = function fn1() {}`
+    const res = parseScript(script)
+    const target: PartialIdentifierInScope1 = {
+      name: 'fn1',
+      scope: 'local',
+      type: 'variable',
+    }
+    expect(res.identifiers.map(map)).toEqual([target])
+  })
+
+  test('arrow function expression will not as local identifier', () => {
+    const script = `const fn1 =  () => {}`
+    const res = parseScript(script)
+    const target: PartialIdentifierInScope1 = {
+      name: 'fn1',
+      scope: 'local',
+      type: 'variable',
+    }
+    expect(res.identifiers.map(map)).toEqual([target])
   })
 
   test('export function declaration directly', () => {
@@ -247,7 +230,7 @@ describe('local identifier test', () => {
       exported: true,
       imported: false
     }
-    expect(res.identifiers[0]).toEqual(target)
+    expect(res.identifiers).toEqual([target])
   })
 
   test('default function declaration exports, directly', () => {
@@ -260,251 +243,93 @@ describe('local identifier test', () => {
       imported: false,
       exported: true
     }
-    expect(res.identifiers[0]).toEqual(ids)
+    expect(res.identifiers).toEqual([ids])
+  })
+})
+
+describe('local class test', () => {
+  test('class declarataion will as local identifier', () => {
+    const script = `class A {}`
+    const res = parseScript(script)
+    const target: PartialIdentifierInScope1 = {
+      name: 'A',
+      scope: 'local',
+      type: 'class',
+    }
+    expect(res.identifiers.map(map)).toEqual([target])
   })
 
-  test('mixed declartion without module', () => {
+  test('class expression will not as local identifier', () => {
+    const script = `const B = class B {}`
+    const res = parseScript(script)
+    const target: PartialIdentifierInScope1 = {
+      name: 'B',
+      scope: 'local',
+      type: 'variable',
+    }
+    expect(res.identifiers.map(map)).toEqual([target])
+  })
+
+  test('class method、set、get、constructor will as local identifier', () => {
     const script = `
-      function fn1() {}
-      let var1, var2;
-      const var3 = 1, var4 = 3;
-      function fn2() {}
-      var var5, var6
-      function fn3() {}
-      const fn4 = function fn4() {}
-      const fn5 = () => {}
+      class A {
+        constructor() {}
+        method1() {}
+        set value1(v1) {}
+        get value2() {} 
+      }
     `
     const res = parseScript(script)
     const target: PartialIdentifierInScope1[] = [
       {
-        name: 'fn1',
+        name: 'constructor',
         scope: 'local',
-        type: 'function'
+        type: 'member',
       },
       {
-        name: 'var1',
+        name: 'method1',
         scope: 'local',
-        type: 'variable'
+        type: 'member',
       },
       {
-        name: 'var2',
+        name: 'value1',
         scope: 'local',
-        type: 'variable'
+        type: 'member',
       },
       {
-        name: 'var3',
+        name: 'value2',
         scope: 'local',
-        type: 'variable'
-      },
-      {
-        name: 'var4',
-        scope: 'local',
-        type: 'variable'
-      },
-      {
-        name: 'fn2',
-        scope: 'local',
-        type: 'function'
-      },
-      {
-        name: 'var5',
-        scope: 'local',
-        type: 'variable'
-      },
-      {
-        name: 'var6',
-        scope: 'local',
-        type: 'variable'
-      },
-      {
-        name: 'fn3',
-        scope: 'local',
-        type: 'function'
-      },
-      {
-        name: 'fn4',
-        scope: 'local',
-        type: 'variable'
-      },
-      {
-        name: 'fn5',
-        scope: 'local',
-        type: 'variable'
-      },
+        type: 'member',
+      }
     ]
-    expect(res.identifiers.map(map1)).toEqual(target)
+    expect(res.children[0].identifiers.map(map)).toEqual(target)
   })
 
-  test('mixed declartion within module', () => {
-    const script = `
-      export { a_var1, a_var2, a_var3 as var0 } from 'moduleA'
-      import { b_var1, b_var2, var3 as b_var3 } from 'moduleB'
-      import * as moduleC from 'moduleC'
-      import moduleD from 'moduleD'
-      function fn1() {}
-      let var1, var2;
-      const var3 = 1, var4 = 3;
-      function fn2() {}
-      var var5, var6
-      export function fn3() {}
-      const fn4 = function fn4() {}
-      const fn5 = () => {}
-      export {
-        fn1,
-        var1 as exportedVar1,
-      }
-      export default fn1
-    `
+  test('export class declaration directly', () => {
+    const script = `export class A {}`
     const res = parseModule(script)
-    const target: IdentifierInScope[] = [
-      {
-        name: 'a_var1',
-        scope: 'unreachable',
-        type: 'variable',
-        imported: false,
-        exported: true
-      },
-      {
-        name: 'a_var2',
-        scope: 'unreachable',
-        type: 'variable',
-        imported: false,
-        exported: true
-      },
-      {
-        name: 'var0',
-        scope: 'unreachable',
-        type: 'variable',
-        imported: false,
-        exported: true
-      },
-      {
-        name: 'b_var1',
-        scope: 'local',
-        type: 'variable',
-        imported: true,
-        exported: false
-      },
-      {
-        name: 'b_var2',
-        scope: 'local',
-        type: 'variable',
-        imported: true,
-        exported: false
-      },
-      {
-        name: 'b_var3',
-        scope: 'local',
-        type: 'variable',
-        imported: true,
-        exported: false
-      },
-      {
-        name: 'moduleC',
-        scope: 'local',
-        type: 'variable',
-        imported: true,
-        exported: false
-      },
-      {
-        name: 'moduleD',
-        scope: 'local',
-        type: 'variable',
-        imported: true,
-        exported: false
-      },
-      {
-        name: 'fn1',
-        scope: 'local',
-        type: 'function',
-        imported: false,
-        exported: true
-      },
-      {
-        name: 'var1',
-        scope: 'local',
-        type: 'variable',
-        imported: false,
-        exported: false
-      },
-      {
-        name: 'var2',
-        scope: 'local',
-        type: 'variable',
-        imported: false,
-        exported: false
-      },
-      {
-        name: 'var3',
-        scope: 'local',
-        type: 'variable',
-        imported: false,
-        exported: false
-      },
-      {
-        name: 'var4',
-        scope: 'local',
-        type: 'variable',
-        imported: false,
-        exported: false
-      },
-      {
-        name: 'fn2',
-        scope: 'local',
-        type: 'function',
-        imported: false,
-        exported: false
-      },
-      {
-        name: 'var5',
-        scope: 'local',
-        type: 'variable',
-        imported: false,
-        exported: false
-      },
-      {
-        name: 'var6',
-        scope: 'local',
-        type: 'variable',
-        imported: false,
-        exported: false
-      },
-      {
-        name: 'fn3',
-        scope: 'local',
-        type: 'function',
-        imported: false,
-        exported: true
-      },
-      {
-        name: 'fn4',
-        scope: 'local',
-        type: 'variable',
-        imported: false,
-        exported: false
-      },
-      {
-        name: 'fn5',
-        scope: 'local',
-        type: 'variable',
-        imported: false,
-        exported: false
-      },
-      {
-        name: 'fn1',
-        scope: 'unreachable',
-        type: 'variable',
-        imported: false,
-        exported: true
-      },
-      {
-        name: 'exportedVar1',
-        scope: 'unreachable',
-        type: 'variable',
-        imported: false,
-        exported: true
-      },
-    ]
-    expect(res.identifiers).toEqual(target)
+    const target: IdentifierInScope = {
+      name: 'A',
+      type: 'class',
+      scope: 'local',
+      exported: true,
+      imported: false
+    }
+    expect(res.identifiers).toEqual([target])
+  })
+
+  test('default function declaration exports, directly', () => {
+    const script = `export default class A {}`
+    const res = parseModule(script)
+    const ids: IdentifierInScope = {
+      name: 'A',
+      scope: 'local',
+      type: 'class',
+      imported: false,
+      exported: true
+    }
+    expect(res.identifiers).toEqual([ids])
   })
 })
+
+// describe('local argument test')

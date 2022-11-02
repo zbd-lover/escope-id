@@ -3,13 +3,13 @@ import { Program } from "estree";
 import parseId from "../../src";
 
 const options1: Options = {
-  ecmaVersion: 'latest',
-  sourceType: 'script'
+  ecmaVersion: 2021,
+  sourceType: 'script',
 }
 
 const options2: Options = {
-  ecmaVersion: 'latest',
-  sourceType: 'module'
+  ecmaVersion: 2021,
+  sourceType: 'module',
 }
 
 function getProgram(script: string, options: Options) {

@@ -44,7 +44,7 @@ describe('test of lang feature', () => {
     expect(res.identifiers).toEqual(target)
   })
 
-  test('can\'t support \'with statement\'', () => {
+  test('shouldn\'t support \'with statement\'', () => {
     const ws: WithStatement = {
       type: 'WithStatement',
       object: {
@@ -74,7 +74,7 @@ describe('test of lang feature', () => {
     }
     expect(res.identifiers).toEqual([_window])
   })
-  
+
   test('default variable exports, after declaration', () => {
     const script = `
       let var1
@@ -132,6 +132,38 @@ describe('test of lang feature', () => {
     const target: IdentifierInScope = {
       name: 'fn1',
       type: 'function',
+      scope: 'local',
+      imported: false,
+      exported: true
+    }
+    expect(res.identifiers[0]).toEqual(target)
+  })
+
+  test('default class declaration exports, after declaration', () => {
+    const script = `
+      class A {}
+      export default A
+    `
+    const res = parseModule(script)
+    const target: IdentifierInScope = {
+      name: 'A',
+      type: 'class',
+      scope: 'local',
+      imported: false,
+      exported: true
+    }
+    expect(res.identifiers[0]).toEqual(target)
+  })
+
+  test('default class declaration exports, before declaration', () => {
+    const script = `
+      export default A
+      class A {}
+    `
+    const res = parseModule(script)
+    const target: IdentifierInScope = {
+      name: 'A',
+      type: 'class',
       scope: 'local',
       imported: false,
       exported: true

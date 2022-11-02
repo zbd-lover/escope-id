@@ -6,13 +6,14 @@ import {
   BlockStatement,
   Function,
   Program,
-  SwitchStatement,
   CatchClause,
-  WithStatement
+  WithStatement,
+  SwitchStatement,
+  ClassBody
 } from 'estree'
 
 export type IdScope = 'local' | 'ancestral' | 'unreachable'
-export type IdType = 'variable' | 'function' | 'argument' | 'class' | 'unknown'
+export type IdType = 'variable' | 'function' | 'argument' | 'class' | 'unknown' | 'member'
 
 interface BaseIdentifierInScope {
   name: string,
@@ -20,11 +21,6 @@ interface BaseIdentifierInScope {
   scope: IdScope,
   imported: boolean,
   exported: boolean
-}
-
-interface BaseLocalId extends BaseIdentifierInScope {
-  scope: 'local',
-  type: 'variable' | 'function' | 'argument' | 'class',
 }
 
 interface AncestralId extends BaseIdentifierInScope {
@@ -37,46 +33,33 @@ interface UnreachableId extends BaseIdentifierInScope {
   type: 'function' | 'variable'
 }
 
-interface LocalVariableId extends BaseLocalId {
-  type: 'variable',
+export interface LocalId extends BaseIdentifierInScope {
+  scope: 'local',
+  type: 'variable' | 'function' | 'argument' | 'class' | 'member',
 }
-
-interface LocalFunctionId extends BaseLocalId {
-  type: 'function',
-}
-
-interface LocalArgumentId extends BaseLocalId {
-  type: 'argument',
-}
-
-interface LocalClassId extends BaseLocalId {
-  type: 'class'
-}
-
-type LocalId = LocalVariableId | LocalFunctionId | LocalArgumentId | LocalClassId
 
 export type IdentifierInScope = LocalId | AncestralId | UnreachableId
 
-/**
- * The Node that can form a variable scope.
- * */
-export type NodeWithScope = ForStatement |
-  ForInStatement |
-  ForOfStatement |
+export type IdentifierMatcher = (identifier: IdentifierInScope) => boolean
+
+export type ScopeNode = Program |
   Function |
   BlockStatement |
-  SwitchStatement |
+  ForStatement |
+  ForInStatement |
+  ForOfStatement |
   CatchClause |
-  Program |
-  WithStatement
+  WithStatement |
+  SwitchStatement |
+  ClassBody
 
 export default class Scope {
-  public node: NodeWithScope
+  public node: ScopeNode
   public parent: Scope | null
   public children: Scope[]
   public identifiers: IdentifierInScope[]
 
-  constructor(node: NodeWithScope) {
+  constructor(node: ScopeNode) {
     this.node = node
     this.parent = null
     this.children = []
@@ -101,8 +84,8 @@ export default class Scope {
     })) return
 
     if (exported && type === 'unknown' && scope === 'ancestral') {
-      const index = this.identifiers.findIndex((id) => 
-        id.name === name && 
+      const index = this.identifiers.findIndex((id) =>
+        id.name === name &&
         (id.scope === 'local' || id.scope === 'ancestral') &&
         !id.exported
       )
@@ -111,10 +94,9 @@ export default class Scope {
       } else {
         this.identifiers.push(id)
       }
-    } else if (scope === 'local' && (type === 'variable' || type === 'function')) {
-      const index = this.identifiers.findIndex((id) => 
+    } else if (scope === 'local' && (type === 'variable' || type === 'function' || type === 'class')) {
+      const index = this.identifiers.findIndex((id) =>
         id.name === name &&
-        // id.exported &&
         id.scope === 'ancestral' && id.type === 'unknown'
       )
       if (index >= 0 && (this.identifiers[index].exported || exported || hoisted)) {
@@ -128,47 +110,27 @@ export default class Scope {
   }
 
   // tools
-  public hasId(name: string, type?: IdType) {
-    return !!this.identifiers.find((id) => id.name === name && type ? id.type === type : true)
-  }
 
-  public hasLocalId(name: string, type?: IdType) {
-    return !!this.identifiers.find((id) => {
-      return id.scope === 'local' &&
-        id.name === name &&
-        (type ? id.type === type : true)
-    })
-  }
-
-  public hasAncestralId(name: string) {
-    return !!this.identifiers.find((id) => id.scope === 'ancestral' && id.name === name)
-  }
-
-  public hasUnreachableId(name: string) {
-    return !!this.identifiers.find((id) => id.scope === 'unreachable' && id.name === name)
+  public hasId(finder: string | IdentifierMatcher) {
+    if (typeof finder === 'string') {
+      return !!this.identifiers.find((id) => id.name === finder)
+    }
+    return !!this.identifiers.find(finder)
   }
 
   public hasGlobalId(name: string) {
     let base: Scope | null = this;
-    while (base && base.hasAncestralId(name)) {
+    while (base && base.hasId((id) => id.name === name && id.scope === 'ancestral')) {
       base = base.parent
     }
     return base === null
   }
 
-  public getAllLocalIds() {
-    return this.identifiers.filter((id) => id.scope === 'local')
-  }
-
-  public getAllAncestralIds() {
-    return this.identifiers.filter((id) => id.scope === 'ancestral')
+  public getIds(matcher: IdentifierMatcher) {
+    return this.identifiers.filter(matcher)
   }
 
   public getAllGlobalIds() {
     return this.identifiers.filter((id) => this.hasGlobalId(id.name))
-  }
-
-  public getIdsByType(type: IdType) {
-    return this.identifiers.filter((id) => id.type === type)
   }
 }

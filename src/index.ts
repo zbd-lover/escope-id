@@ -1,25 +1,35 @@
 import { traverse } from 'estraverse'
 import { ObjectExpression, ObjectPattern } from 'estree'
-import Scope, { NodeWithScope, IdScope, IdType, IdentifierInScope } from './scope'
+import Scope, { ScopeNode, IdScope, IdType, IdentifierInScope, IdentifierMatcher } from './scope'
 
 export {
-  Scope
+  Scope,
+  IdentifierMatcher
 }
 
 export type {
-  NodeWithScope,
+  ScopeNode,
   IdType as IdentifierType,
   IdScope as IdentifierScope,
   IdentifierInScope
 }
 
-export default function parse(block: NodeWithScope) {
+function hasLocalId(scope: Scope, name: string) {
+  return scope.hasId((id) => id.name === name && id.scope === 'local')
+}
+
+function hasUnreachableId(scope: Scope, name: string) {
+  return scope.hasId((id) => id.name === name && id.scope === 'unreachable')
+}
+
+export default function parse(block: ScopeNode) {
   const top = new Scope(block)
   /** scope stack */
   const stack = [top]
 
   let varKind: 'var' | 'let' | 'const' | null;
   let idTypeContext: IdType = 'unknown'
+  let inFunctionExpContext = false, inFunctionExpBlock = false
   let inExportContext = false, inImportContext = false
 
   function currentScope(): Scope | undefined {
@@ -34,44 +44,28 @@ export default function parse(block: NodeWithScope) {
   }
 
   function addIdIntoCurrentScope(id: IdentifierInScope) {
-    const hoisted = (id.type === 'variable' && varKind === 'var') || id.type === 'function'
+    const hoisted = (id.type === 'variable' && varKind === 'var') || id.type === 'function' || id.type === 'class'
     currentScope()?.addId(id, hoisted)
   }
 
   function tryAddAncestralId(name: string) {
-    if (!currentScope()?.hasLocalId(name)) {
-      addIdIntoCurrentScope({
-        name,
-        scope: 'ancestral',
-        type: 'unknown',
-        exported: false,
-        imported: false
-      })
-    }
+    const cs = currentScope()
+    if (!cs || hasLocalId(cs, name)) return
+    addIdIntoCurrentScope({
+      name,
+      scope: 'ancestral',
+      type: 'unknown',
+      exported: false,
+      imported: false
+    })
   }
 
   traverse(block, {
     enter(node, parent) {
       if (!parent) return
 
-      // with statement is deprecated.
+      // 'with' is deprecated.
       if (node.type === 'WithStatement') {
-        this.skip()
-        return
-      }
-
-      if (node.type === 'ClassDeclaration') {
-        const name = node.id?.name
-        if (name) {
-          addIdIntoCurrentScope({
-            name,
-            type: 'class',
-            scope: 'local',
-            imported: false,
-            exported: inExportContext
-          })
-        }
-        // no plan about 'class'
         this.skip()
         return
       }
@@ -98,9 +92,15 @@ export default function parse(block: NodeWithScope) {
         case 'FunctionDeclaration':
           idTypeContext = 'function'
           break
+        case 'ClassDeclaration':
+          idTypeContext = 'class'
+          break
         case 'CatchClause':
         case 'ArrowFunctionExpression':
+          idTypeContext = 'argument'
+          break
         case 'FunctionExpression':
+          inFunctionExpContext = true
           idTypeContext = 'argument'
           break
       }
@@ -120,6 +120,19 @@ export default function parse(block: NodeWithScope) {
           idTypeContext = 'argument'
           push(new Scope(node))
           break
+        case 'ClassDeclaration':
+          const className = node.id?.name
+          if (className) {
+            addIdIntoCurrentScope({
+              name: className,
+              scope: 'local',
+              type: 'class',
+              exported: inExportContext,
+              imported: inImportContext
+            })
+          }
+          idTypeContext = 'unknown'
+          break
         // Although a fn-exp can have a name, it only can be called inside itself.
         // Thus, its name will be added in the concomitant block scope, if one.
         case 'FunctionExpression':
@@ -128,17 +141,19 @@ export default function parse(block: NodeWithScope) {
         case 'ForInStatement':
         case 'ForOfStatement':
         case 'CatchClause':
+        case 'ClassBody':
           push(new Scope(node));
           break
         case 'BlockStatement':
+          inFunctionExpBlock = inFunctionExpContext
           idTypeContext = 'unknown'
           const type = parent.type
-          // a pure block without context
           if (
             type !== 'FunctionDeclaration' &&
             type !== 'FunctionExpression' &&
             type !== 'ArrowFunctionExpression' &&
-            type !== 'CatchClause'
+            type !== 'CatchClause' &&
+            type !== 'ClassBody'
           ) {
             push(new Scope(node))
           }
@@ -146,10 +161,15 @@ export default function parse(block: NodeWithScope) {
         case 'Identifier':
           // judge about 'unreachable' identifier
           const cs = currentScope()
-          if (cs && cs.node.type === 'FunctionExpression') {
+          if (
+            inFunctionExpBlock &&
+            idTypeContext !== 'argument' &&
+            cs &&
+            cs.node.type === 'FunctionExpression'
+          ) {
             if (cs.node.id) {
               const { name } = cs.node.id
-              if (!cs.hasId(name) && !cs.hasLocalId(name) && name === node.name) {
+              if (!hasLocalId(cs, name) && name === node.name) {
                 addIdIntoCurrentScope({
                   name: node.name,
                   scope: 'unreachable',
@@ -221,6 +241,10 @@ export default function parse(block: NodeWithScope) {
                 tryAddAncestralId(node.name)
               }
               break;
+            case 'SwitchStatement':
+              tryAddAncestralId(node.name)
+              push(new Scope(parent))
+              break
             case 'CatchClause':
               if (idTypeContext === 'argument') {
                 if (parent.param === node) {
@@ -281,9 +305,6 @@ export default function parse(block: NodeWithScope) {
                 tryAddAncestralId(node.name)
               }
               break
-            case 'SpreadElement':
-              tryAddAncestralId(node.name)
-              break
             case 'MemberExpression':
               if (parent.object === node) {
                 tryAddAncestralId(node.name)
@@ -291,7 +312,26 @@ export default function parse(block: NodeWithScope) {
                 tryAddAncestralId(node.name)
               }
               break
+            case 'MethodDefinition':
+              if (parent.key === node) {
+                if (parent.computed) {
+                  tryAddAncestralId(node.name)
+                } else {
+                  addIdIntoCurrentScope({
+                    name: node.name,
+                    type: 'member',
+                    scope: 'local',
+                    imported: false,
+                    exported: false
+                  })
+                }
+              }
+              break
             case 'Property':
+              if (parent.computed && parent.key === node) {
+                tryAddAncestralId(node.name)
+                break
+              }
               const parents = this.parents().reverse()
               const contextNode = parents.find((id) => id.type === 'ObjectExpression' || id.type === 'ObjectPattern') as (ObjectPattern | ObjectExpression | undefined)
               if (contextNode?.type === 'ObjectExpression' && parent.value === node) {
@@ -313,7 +353,7 @@ export default function parse(block: NodeWithScope) {
               }
               break
             default:
-              if (!cs || !cs.hasUnreachableId(node.name)) {
+              if (cs && !hasUnreachableId(cs, node.name)) {
                 tryAddAncestralId(node.name)
               }
               break
@@ -327,8 +367,15 @@ export default function parse(block: NodeWithScope) {
         case 'ForStatement':
         case 'ForInStatement':
         case 'ForOfStatement':
-        case 'BlockStatement':
+        case 'ClassBody':
           stack.pop()
+          break
+        case 'BlockStatement':
+          inFunctionExpBlock = false
+          stack.pop()
+          break
+        case 'FunctionExpression':
+          inFunctionExpContext = false;
           break
         case 'VariableDeclaration':
           idTypeContext = 'unknown'
