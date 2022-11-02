@@ -1,6 +1,6 @@
 import { WithStatement } from "estree";
 import parse, { IdentifierInScope } from "../src";
-import { parseScript } from "./helpers/parse";
+import { parseScript, parseModule } from "./helpers/parse";
 
 describe('test of lang feature', () => {
   test('delay determining identifier type', () => {
@@ -73,5 +73,69 @@ describe('test of lang feature', () => {
       imported: false
     }
     expect(res.identifiers).toEqual([_window])
+  })
+  
+  test('default variable exports, after declaration', () => {
+    const script = `
+      let var1
+      export default var1
+    `
+    const res = parseModule(script)
+    const target: IdentifierInScope = {
+      name: 'var1',
+      scope: 'local',
+      type: 'variable',
+      imported: false,
+      exported: true
+    }
+    expect(res.identifiers[0]).toEqual(target)
+  })
+
+  test('default variable exports, before declaration', () => {
+    const script = `
+      export default var1
+      let var1
+    `
+    const res = parseModule(script)
+    const target: IdentifierInScope = {
+      name: 'var1',
+      scope: 'local',
+      type: 'variable',
+      imported: false,
+      exported: true
+    }
+    expect(res.identifiers[0]).toEqual(target)
+  })
+
+  test('default function declaration exports, after declaration', () => {
+    const script = `
+      function fn1() {}
+      export default fn1
+    `
+    const res = parseModule(script)
+    const target: IdentifierInScope = {
+      name: 'fn1',
+      type: 'function',
+      scope: 'local',
+      imported: false,
+      exported: true
+    }
+    expect(res.identifiers[0]).toEqual(target)
+  })
+
+  test('default function declaration exports, before declaration', () => {
+    const script = `
+      export default fn1
+      function fn1() {}
+    `
+    const res = parseModule(script)
+    const target: IdentifierInScope = {
+      name: 'fn1',
+      type: 'function',
+      scope: 'local',
+      imported: false,
+      exported: true
+    }
+    expect(res.identifiers[0]).toEqual(target)
   })
 })
