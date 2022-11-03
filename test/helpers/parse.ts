@@ -1,6 +1,6 @@
 import { parse as parseAST, Options } from 'acorn'
 import { Program } from 'estree'
-import parseId from '../../src'
+import parseId from '../../src/parse'
 
 const options1: Options = {
   ecmaVersion: 2021,

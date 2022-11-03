@@ -1,4 +1,4 @@
-import { Scope } from 'src'
+import { Scope } from 'src/index'
 
 export default function validate (scope: Scope) {
   for (let i = 0; i < scope.children.length; i++) {

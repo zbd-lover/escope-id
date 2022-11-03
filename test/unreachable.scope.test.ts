@@ -1,4 +1,4 @@
-import { IdentifierInScope } from '../src'
+import { IdentifierInScope } from '../src/index'
 import { parseModule, parseScript } from './helpers/parse'
 
 describe('unreachable identifier test', () => {
@@ -69,7 +69,7 @@ describe('unreachable identifier test', () => {
     ]
     expect(res.children[0].identifiers).toEqual(target)
   })
-  
+
   test('named function expression 2', () => {
     const script = `
       const fn1 = function fn1() {
@@ -151,7 +151,7 @@ describe('unreachable identifier test', () => {
     ]
     expect(res.children[0].children[0].identifiers).toEqual(target)
   })
-  
+
   test('named class expression 2', () => {
     const script = `
       const A = class A {

@@ -1,6 +1,7 @@
 /node_modules
 coverage
-/dist
-/es
-/lib
+dist
+es
+lib
 debug.ts
+types

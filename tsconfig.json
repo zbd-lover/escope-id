@@ -10,17 +10,18 @@
       "dom",
       "es2017"
     ],
-    "allowJs": true,
+    "rootDir": "src",
+    "allowJs": false,
+    "checkJs": false,
     "sourceMap": true,
     "removeComments": false,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "baseUrl": "./",
-    "noEmit": true
+    "declarationDir": "./types"
   },
   "include": [
     "src/**/*",
-    "test/**/*",
   ],
   "exclude": [
     "node_modules",

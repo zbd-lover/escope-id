@@ -19,7 +19,10 @@ export default defineConfig([
     output: { file: 'lib/estree-identifier-parser.js', format: 'commonjs', indent: false },
     external,
     plugins: [
-      typescript(),
+      typescript({
+        emitDeclarationOnly: false,
+        sourceMap: false
+      }),
       nodeResolve(),
       babel()
     ]
@@ -31,7 +34,10 @@ export default defineConfig([
     output: { file: 'es/estree-identifier-parser.js', format: 'es', indent: false },
     external,
     plugins: [
-      typescript(),
+      typescript({
+        emitDeclarationOnly: false,
+        sourceMap: false
+      }),
       commonjs(),
       nodeResolve(),
       babel()
@@ -44,7 +50,10 @@ export default defineConfig([
     output: { file: 'es/estree-identifier-parser.mjs', format: 'es', indent: false },
     external,
     plugins: [
-      typescript(),
+      typescript({
+        emitDeclarationOnly: false,
+        sourceMap: false
+      }),
       commonjs(),
       nodeResolve(),
       replace({
@@ -54,7 +63,6 @@ export default defineConfig([
       babel({
         exclude: 'node_modules/**',
         skipPreflightCheck: true,
-        babelHelpers: 'bundled'
       }),
       terser({
         compress: {
@@ -77,12 +85,14 @@ export default defineConfig([
       exports: 'named'
     },
     plugins: [
-      typescript(),
+      typescript({
+        emitDeclarationOnly: false,
+        sourceMap: false
+      }),
       commonjs(),
       nodeResolve(),
       babel({
         exclude: 'node_modules/**',
-        babelHelpers: 'bundled'
       }),
       replace({
         preventAssignment: true,
@@ -102,13 +112,15 @@ export default defineConfig([
       exports: 'named'
     },
     plugins: [
-      typescript(),
+      typescript({
+        emitDeclarationOnly: false,
+        sourceMap: false
+      }),
       commonjs(),
       nodeResolve(),
       babel({
         exclude: 'node_modules/**',
         skipPreflightCheck: true,
-        babelHelpers: 'bundled'
       }),
       replace({
         preventAssignment: true,

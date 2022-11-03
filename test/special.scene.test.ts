@@ -1,5 +1,5 @@
 import { WithStatement } from 'estree'
-import parse, { IdentifierInScope } from '../src'
+import { parse, IdentifierInScope } from '../src/index'
 import { parseScript, parseModule } from './helpers/parse'
 
 describe('test special scene', () => {
