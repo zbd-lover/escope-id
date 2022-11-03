@@ -1,5 +1,5 @@
 import { traverse } from 'estraverse'
-import { ObjectExpression, ObjectPattern } from 'estree'
+import { ClassExpression, ObjectExpression, ObjectPattern } from 'estree'
 import Scope, { ScopeNode, IdScope, IdType, IdentifierInScope, IdentifierMatcher } from './scope'
 
 export {
@@ -30,6 +30,7 @@ export default function parse(block: ScopeNode) {
   let varKind: 'var' | 'let' | 'const' | null;
   let idTypeContext: IdType = 'unknown'
   let inFunctionExpContext = false, inFunctionExpBlock = false
+  let inClassExpContext = false, inClassExpBlock = false
   let inExportContext = false, inImportContext = false
 
   function currentScope(): Scope | undefined {
@@ -70,6 +71,10 @@ export default function parse(block: ScopeNode) {
         return
       }
 
+      if (parent.type === 'VariableDeclarator' && parent.init === node) {
+        idTypeContext = 'unknown' 
+      }
+
       switch (node.type) {
         case 'ImportDeclaration':
           inImportContext = true
@@ -86,14 +91,19 @@ export default function parse(block: ScopeNode) {
 
       switch (node.type) {
         case 'VariableDeclaration':
-          idTypeContext = 'variable'
           varKind = node.kind
+          break
+        case 'VariableDeclarator':
+          idTypeContext = 'variable'
           break
         case 'FunctionDeclaration':
           idTypeContext = 'function'
           break
         case 'ClassDeclaration':
           idTypeContext = 'class'
+          break
+        case 'ClassExpression':
+          inClassExpContext = true
           break
         case 'CatchClause':
         case 'ArrowFunctionExpression':
@@ -146,6 +156,7 @@ export default function parse(block: ScopeNode) {
           break
         case 'BlockStatement':
           inFunctionExpBlock = inFunctionExpContext
+          inClassExpBlock = inClassExpContext
           idTypeContext = 'unknown'
           const type = parent.type
           if (
@@ -161,15 +172,26 @@ export default function parse(block: ScopeNode) {
         case 'Identifier':
           // judge about 'unreachable' identifier
           const cs = currentScope()
-          if (
-            inFunctionExpBlock &&
-            idTypeContext !== 'argument' &&
-            cs &&
-            cs.node.type === 'FunctionExpression'
-          ) {
-            if (cs.node.id) {
+          if (cs && idTypeContext === 'unknown') {
+            if (inClassExpBlock) {
+              const parents = this.parents().reverse()
+              const classExp = parents.find((parent) => parent.type === 'ClassExpression') as (ClassExpression | undefined)
+              if (classExp && classExp.id) {
+                const { name } = classExp.id
+                if (name === node.name) {
+                  addIdIntoCurrentScope({
+                    name: node.name,
+                    scope: 'unreachable',
+                    type: 'class',
+                    imported: false,
+                    exported: inExportContext
+                  })
+                  break
+                }
+              }
+            } else if (inFunctionExpBlock && cs.node.type === 'FunctionExpression' && cs.node.id) {
               const { name } = cs.node.id
-              if (!hasLocalId(cs, name) && name === node.name) {
+              if (name === node.name) {
                 addIdIntoCurrentScope({
                   name: node.name,
                   scope: 'unreachable',
@@ -181,6 +203,7 @@ export default function parse(block: ScopeNode) {
               }
             }
           }
+
           switch (parent.type) {
             case 'ImportSpecifier':
             case 'ImportDefaultSpecifier':
@@ -372,13 +395,19 @@ export default function parse(block: ScopeNode) {
           break
         case 'BlockStatement':
           inFunctionExpBlock = false
+          inClassExpBlock = false
           stack.pop()
           break
         case 'FunctionExpression':
           inFunctionExpContext = false;
           break
-        case 'VariableDeclaration':
+        case 'ClassExpression':
+          inClassExpContext = false
+          break
+        case 'VariableDeclarator':
           idTypeContext = 'unknown'
+          break
+        case 'VariableDeclaration':
           varKind = null
           break
         case 'ImportDeclaration':

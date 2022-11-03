@@ -30,7 +30,7 @@ interface AncestralId extends BaseIdentifierInScope {
 
 interface UnreachableId extends BaseIdentifierInScope {
   scope: 'unreachable'
-  type: 'function' | 'variable'
+  type: 'function' | 'variable' | 'class'
 }
 
 export interface LocalId extends BaseIdentifierInScope {
@@ -82,8 +82,12 @@ export default class Scope {
         id.imported === imported &&
         id.exported === exported
     })) return
-
-    if (exported && type === 'unknown' && scope === 'ancestral') {
+    if (scope === 'unreachable' && (type === 'function' || type === 'class')) {
+      const index = this.identifiers.findIndex((id) => id.scope === 'local' && id.name === name)
+      if (index === -1) {
+        this.identifiers.push(id)
+      }
+    } else if (exported && type === 'unknown' && scope === 'ancestral') {
       const index = this.identifiers.findIndex((id) =>
         id.name === name &&
         (id.scope === 'local' || id.scope === 'ancestral') &&
@@ -97,7 +101,11 @@ export default class Scope {
     } else if (scope === 'local' && (type === 'variable' || type === 'function' || type === 'class')) {
       const index = this.identifiers.findIndex((id) =>
         id.name === name &&
-        id.scope === 'ancestral' && id.type === 'unknown'
+        (
+          (id.scope === 'ancestral' && id.type === 'unknown')  ||
+          (id.scope === 'unreachable' && id.type === 'function') || 
+          (id.scope === 'unreachable' && id.type === 'class')
+        )
       )
       if (index >= 0 && (this.identifiers[index].exported || exported || hoisted)) {
         id.exported = this.identifiers[index].exported
