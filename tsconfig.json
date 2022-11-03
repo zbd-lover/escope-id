@@ -2,7 +2,7 @@
   "compilerOptions": {
     "strict": true,
     "target": "ESNext",
-    "module": "CommonJS",
+    "module": "ESNext",
     "moduleResolution": "Node",
     "esModuleInterop": true,
     "skipLibCheck": true,
@@ -21,10 +21,11 @@
   "include": [
     "src/**/*",
     "test/**/*",
-    "test/debug.tsug.ts",
   ],
   "exclude": [
     "node_modules",
-    "dist"
+    "dist",
+    "lib",
+    "es"
   ]
 }

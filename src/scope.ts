@@ -88,11 +88,13 @@ export default class Scope {
         this.identifiers.push(id)
       }
     } else if (exported && type === 'unknown' && scope === 'ancestral') {
-      const index = this.identifiers.findIndex((id) =>
-        id.name === name &&
-        (id.scope === 'local' || id.scope === 'ancestral') &&
-        !id.exported
-      )
+      const index = this.identifiers.findIndex((id) => {
+        return (
+          id.name === name &&
+          (id.scope === 'local' || id.scope === 'ancestral') &&
+          !id.exported
+        )
+      })
       if (index >= 0) {
         this.identifiers[index].exported = true
       } else {

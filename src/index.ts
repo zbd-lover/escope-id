@@ -63,16 +63,19 @@ export default function parse (block: ScopeNode) {
 
   traverse(block, {
     enter (node, parent) {
-      if (!parent) return
-
       // 'with' is deprecated.
       if (node.type === 'WithStatement') {
+        if (node.object.type === 'Identifier') {
+          tryAddAncestralId(node.object.name)
+        }
         this.skip()
         return
       }
 
+      if (!parent) return
+
       if (parent.type === 'VariableDeclarator' && parent.init === node) {
-        idTypeContext = 'unknown' 
+        idTypeContext = 'unknown'
       }
 
       switch (node.type) {
@@ -240,17 +243,17 @@ export default function parse (block: ScopeNode) {
                 })
               }
               break
-            case 'ExportAllDeclaration':
-              if (parent.exported === node) {
-                addIdIntoCurrentScope({
-                  name: node.name,
-                  scope: 'local',
-                  type: 'variable',
-                  exported: true,
-                  imported: false
-                })
-              }
-              break
+            // case 'ExportAllDeclaration':
+            //   if (parent.exported === node) {
+            //     addIdIntoCurrentScope({
+            //       name: node.name,
+            //       scope: 'local',
+            //       type: 'variable',
+            //       exported: true,
+            //       imported: false
+            //     })
+            //   }
+            //   break
             case 'VariableDeclarator':
               if (parent.id === node) {
                 addIdIntoCurrentScope({
@@ -294,8 +297,6 @@ export default function parse (block: ScopeNode) {
                     imported: inImportContext
                   })
                 }
-              } else {
-                tryAddAncestralId(node.name)
               }
               break
             case 'AssignmentPattern':

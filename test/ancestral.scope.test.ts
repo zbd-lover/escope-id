@@ -1,5 +1,5 @@
 import { IdentifierInScope } from 'src'
-import { parseScript } from './helpers/parse'
+import { parseModule, parseScript } from './helpers/parse'
 
 type PartialIdentifierInScope1 = Omit<IdentifierInScope, 'imported' | 'exported'>
 
@@ -277,6 +277,32 @@ describe('ancestral identifier test', () => {
       exported: false
     }
     const res = parseScript(script)
+    expect(res.identifiers.filter(filter)).toEqual([target])
+  })
+
+  test('export default A 1', () => {
+    const script = 'export default A'
+    const target: IdentifierInScope = {
+      name: 'A',
+      scope: 'ancestral',
+      type: 'unknown',
+      imported: false,
+      exported: true
+    }
+    const res = parseModule(script)
+    expect(res.identifiers.filter(filter)).toEqual([target])
+  })
+
+  test('export default A 2', () => {
+    const script = 'A; export default A'
+    const target: IdentifierInScope = {
+      name: 'A',
+      scope: 'ancestral',
+      type: 'unknown',
+      imported: false,
+      exported: true
+    }
+    const res = parseModule(script)
     expect(res.identifiers.filter(filter)).toEqual([target])
   })
 })

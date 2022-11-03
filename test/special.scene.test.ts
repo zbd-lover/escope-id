@@ -2,7 +2,7 @@ import { WithStatement } from 'estree'
 import parse, { IdentifierInScope } from '../src'
 import { parseScript, parseModule } from './helpers/parse'
 
-describe('test of lang feature', () => {
+describe('test special scene', () => {
   test('delay determining identifier type', () => {
     const script = `
       console.log(a)
