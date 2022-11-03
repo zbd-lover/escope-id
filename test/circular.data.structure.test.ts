@@ -1,9 +1,9 @@
-import { parseScript } from "./helpers/parse"
-import validate from "./helpers/validate-circular-structure"
+import { parseScript } from './helpers/parse'
+import validate from './helpers/validate-circular-structure'
 
 describe('test scope\'s circular data structure', () => {
   test('empty program', () => {
-    const script = ``
+    const script = ''
     const res = parseScript(script)
     expect(validate(res)).toBe(true)
     expect(res.children.length).toBe(0)
@@ -28,7 +28,7 @@ describe('test scope\'s circular data structure', () => {
   })
 
   test('for statement', () => {
-    const script = `for (;;) {}`
+    const script = 'for (;;) {}'
     const res = parseScript(script)
     expect(validate(res)).toBe(true)
     expect(res.children.length).toBe(1)
@@ -36,7 +36,7 @@ describe('test scope\'s circular data structure', () => {
   })
 
   test('for in statement', () => {
-    const script = `for (let key in obj) {}`
+    const script = 'for (let key in obj) {}'
     const res = parseScript(script)
     expect(validate(res)).toBe(true)
     expect(res.children.length).toBe(1)
@@ -44,7 +44,7 @@ describe('test scope\'s circular data structure', () => {
   })
 
   test('for of statement', () => {
-    const script = `for (let key of obj) {}`
+    const script = 'for (let key of obj) {}'
     const res = parseScript(script)
     expect(validate(res)).toBe(true)
     expect(res.children.length).toBe(1)
@@ -52,49 +52,49 @@ describe('test scope\'s circular data structure', () => {
   })
 
   test('while statement', () => {
-    const script = `while(false){}`
+    const script = 'while(false){}'
     const res = parseScript(script)
     expect(validate(res)).toBe(true)
     expect(res.children.length).toBe(1)
   })
 
   test('do while statement', () => {
-    const script = `do {} while(false)`
+    const script = 'do {} while(false)'
     const res = parseScript(script)
     expect(validate(res)).toBe(true)
     expect(res.children.length).toBe(1)
   })
 
   test('try statement', () => {
-    const script = `try {} catch(err) {} finally {}`
+    const script = 'try {} catch(err) {} finally {}'
     const res = parseScript(script)
     expect(validate(res)).toBe(true)
     expect(res.children.length).toBe(3)
   })
 
   test('function body1', () => {
-    const script = `function fn1(arg1) {}`
+    const script = 'function fn1(arg1) {}'
     const res = parseScript(script)
     expect(validate(res)).toBe(true)
     expect(res.children.length).toBe(1)
   })
 
   test('function body2', () => {
-    const script = `const fn1 = () => null`
+    const script = 'const fn1 = () => null'
     const res = parseScript(script)
     expect(validate(res)).toBe(true)
     expect(res.children.length).toBe(1)
   })
 
   test('if statement', () => {
-    const script = `if(1) {} else if (2) {} else {} `
+    const script = 'if(1) {} else if (2) {} else {} '
     const res = parseScript(script)
     expect(validate(res)).toBe(true)
     expect(res.children.length).toBe(3)
   })
 
   test('switch statement', () => {
-    const script = `switch(var1) { case 1: case 2: case 3: break } `
+    const script = 'switch(var1) { case 1: case 2: case 3: break } '
     const res = parseScript(script)
     expect(validate(res)).toBe(true)
     expect(res.children.length).toBe(1)

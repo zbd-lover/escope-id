@@ -14,42 +14,42 @@ export type {
   IdentifierInScope
 }
 
-function hasLocalId(scope: Scope, name: string) {
+function hasLocalId (scope: Scope, name: string) {
   return scope.hasId((id) => id.name === name && id.scope === 'local')
 }
 
-function hasUnreachableId(scope: Scope, name: string) {
+function hasUnreachableId (scope: Scope, name: string) {
   return scope.hasId((id) => id.name === name && id.scope === 'unreachable')
 }
 
-export default function parse(block: ScopeNode) {
+export default function parse (block: ScopeNode) {
   const top = new Scope(block)
   /** scope stack */
   const stack = [top]
 
-  let varKind: 'var' | 'let' | 'const' | null;
+  let varKind: 'var' | 'let' | 'const' | null
   let idTypeContext: IdType = 'unknown'
   let inFunctionExpContext = false, inFunctionExpBlock = false
   let inClassExpContext = false, inClassExpBlock = false
   let inExportContext = false, inImportContext = false
 
-  function currentScope(): Scope | undefined {
+  function currentScope (): Scope | undefined {
     return stack[stack.length - 1]
   }
 
   /** push and bind relation */
-  function push(scope: Scope) {
+  function push (scope: Scope) {
     const parent = stack[stack.length - 1]
     stack.push(scope)
     scope.setParent(parent)
   }
 
-  function addIdIntoCurrentScope(id: IdentifierInScope) {
+  function addIdIntoCurrentScope (id: IdentifierInScope) {
     const hoisted = (id.type === 'variable' && varKind === 'var') || id.type === 'function' || id.type === 'class'
     currentScope()?.addId(id, hoisted)
   }
 
-  function tryAddAncestralId(name: string) {
+  function tryAddAncestralId (name: string) {
     const cs = currentScope()
     if (!cs || hasLocalId(cs, name)) return
     addIdIntoCurrentScope({
@@ -62,7 +62,7 @@ export default function parse(block: ScopeNode) {
   }
 
   traverse(block, {
-    enter(node, parent) {
+    enter (node, parent) {
       if (!parent) return
 
       // 'with' is deprecated.
@@ -152,7 +152,7 @@ export default function parse(block: ScopeNode) {
         case 'ForOfStatement':
         case 'CatchClause':
         case 'ClassBody':
-          push(new Scope(node));
+          push(new Scope(node))
           break
         case 'BlockStatement':
           inFunctionExpBlock = inFunctionExpContext
@@ -263,7 +263,7 @@ export default function parse(block: ScopeNode) {
               } else if (parent.init === node) {
                 tryAddAncestralId(node.name)
               }
-              break;
+              break
             case 'SwitchStatement':
               tryAddAncestralId(node.name)
               push(new Scope(parent))
@@ -312,7 +312,7 @@ export default function parse(block: ScopeNode) {
               } else if (parent.right === node) {
                 tryAddAncestralId(node.name)
               }
-              break;
+              break
             case 'ArrayPattern':
             case 'ObjectPattern':
             case 'RestElement':
@@ -384,7 +384,7 @@ export default function parse(block: ScopeNode) {
           break
       }
     },
-    leave(node) {
+    leave (node) {
       // console
       switch (node.type) {
         case 'ForStatement':
@@ -399,7 +399,7 @@ export default function parse(block: ScopeNode) {
           stack.pop()
           break
         case 'FunctionExpression':
-          inFunctionExpContext = false;
+          inFunctionExpContext = false
           break
         case 'ClassExpression':
           inClassExpContext = false
@@ -411,14 +411,14 @@ export default function parse(block: ScopeNode) {
           varKind = null
           break
         case 'ImportDeclaration':
-          inImportContext = false;
+          inImportContext = false
           break
         case 'ExportNamedDeclaration':
           idTypeContext = 'unknown'
-          inExportContext = false;
+          inExportContext = false
           break
         case 'ExportDefaultDeclaration':
-          inExportContext = false;
+          inExportContext = false
           break
       }
     }

@@ -1,7 +1,7 @@
 // For debugging in idea
-import { parse as parseAST } from "acorn"
-import { Program } from "estree";
-import parse from "./src/index";
+import { parse as parseAST } from 'acorn'
+import { Program } from 'estree'
+import parse from '../src/index'
 
 const script = `
 const a = new A()

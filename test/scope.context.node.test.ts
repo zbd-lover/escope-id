@@ -1,8 +1,8 @@
-import { parseModule, parseScript } from "./helpers/parse"
-import { ScopeNode } from "../src"
+import { parseModule, parseScript } from './helpers/parse'
+import { ScopeNode } from '../src'
 
-function withoutPos(node: any) {
-  if (node == null) return node
+function withoutPos (node: unknown) {
+  if (node === null || node === undefined) return node
   const clone = JSON.parse(JSON.stringify(node))
   delete clone.start
   delete clone.end
@@ -20,7 +20,7 @@ function withoutPos(node: any) {
 
 describe('test scope\'s context node', () => {
   test('script program', () => {
-    const script = ``
+    const script = ''
     const target: ScopeNode = {
       type: 'Program',
       body: [],
@@ -31,7 +31,7 @@ describe('test scope\'s context node', () => {
   })
 
   test('module program', () => {
-    const script = `import a from 'moduleA'`
+    const script = 'import a from \'moduleA\''
     const target: ScopeNode = {
       type: 'Program',
       body: [
@@ -49,7 +49,7 @@ describe('test scope\'s context node', () => {
           source: {
             type: 'Literal',
             value: 'moduleA',
-            raw: `'moduleA'`
+            raw: '\'moduleA\''
           }
         }
       ],
@@ -60,7 +60,7 @@ describe('test scope\'s context node', () => {
   })
 
   test('block without context', () => {
-    const script = `{}`
+    const script = '{}'
     const res = parseScript(script)
     const target: ScopeNode = {
       type: 'BlockStatement',
@@ -70,7 +70,7 @@ describe('test scope\'s context node', () => {
   })
 
   test('for statement', () => {
-    const script = `for (;;) {}`
+    const script = 'for (;;) {}'
     const res = parseScript(script)
     const target: ScopeNode = {
       type: 'ForStatement',
@@ -86,7 +86,7 @@ describe('test scope\'s context node', () => {
   })
 
   test('for in statement', () => {
-    const script = `for (let key in obj) {}`
+    const script = 'for (let key in obj) {}'
     const res = parseScript(script)
     const target: ScopeNode = {
       type: 'ForInStatement',
@@ -117,7 +117,7 @@ describe('test scope\'s context node', () => {
   })
 
   test('for of statement', () => {
-    const script = `for (let key of obj) {}`
+    const script = 'for (let key of obj) {}'
     const res = parseScript(script)
     const target: ScopeNode = {
       await: false,
@@ -149,14 +149,17 @@ describe('test scope\'s context node', () => {
   })
 
   test('function declaration', () => {
-    const script = `function fn1() {}`
+    const script = 'function fn1() {}'
     const res = parseScript(script)
     const target: ScopeNode = {
       type: 'FunctionDeclaration',
       async: false,
       generator: false,
       params: [],
-      // @ts-ignore
+      /**
+       * Compatibility of libraries
+       * 
+       * @ts-expect-error */
       expression: false,
       id: {
         type: 'Identifier',
@@ -171,13 +174,16 @@ describe('test scope\'s context node', () => {
   })
 
   test('function expression', () => {
-    const script = `const fn1 = function fn1() {}`
+    const script = 'const fn1 = function fn1() {}'
     const res = parseScript(script)
     const target: ScopeNode = {
       type: 'FunctionExpression',
       async: false,
       generator: false,
-      // @ts-ignore
+      /**
+       * Compatibility of libraries
+       * 
+       * @ts-expect-error */
       expression: false,
       params: [],
       id: {
@@ -193,12 +199,15 @@ describe('test scope\'s context node', () => {
   })
 
   test('arrow function expression', () => {
-    const script = `const fn1 = () => {}; const fn2 = () => null`
+    const script = 'const fn1 = () => {}; const fn2 = () => null'
     const res = parseScript(script)
     const target: ScopeNode[] = [
       {
         type: 'ArrowFunctionExpression',
-        // @ts-ignore
+        /**
+         * Compatibility of libraries
+         * 
+         * @ts-expect-error */
         id: null,
         async: false,
         generator: false,
@@ -215,7 +224,10 @@ describe('test scope\'s context node', () => {
         type: 'ArrowFunctionExpression',
         expression: true,
         params: [],
-        // @ts-ignore
+        /**
+         * Compatibility of libraries
+         * 
+         * @ts-expect-error */
         id: null,
         body: {
           type: 'Literal',
@@ -228,7 +240,7 @@ describe('test scope\'s context node', () => {
   })
 
   test('try statement', () => {
-    const script = `try {} catch(err) {} finally {}`
+    const script = 'try {} catch(err) {} finally {}'
     const res = parseScript(script)
     const target: ScopeNode = {
       type: 'CatchClause',
@@ -245,7 +257,7 @@ describe('test scope\'s context node', () => {
   })
 
   test('switch statement', () => {
-    const script = `switch(var1) { case 1: case 2: case 3: break } `
+    const script = 'switch(var1) { case 1: case 2: case 3: break } '
     const res = parseScript(script)
     const target: ScopeNode = {
       type: 'SwitchStatement',
@@ -277,7 +289,7 @@ describe('test scope\'s context node', () => {
           },
           consequent: [
             {
-              type: "BreakStatement",
+              type: 'BreakStatement',
               label: null
             }
           ]
@@ -317,7 +329,10 @@ describe('test scope\'s context node', () => {
             },
             async: false,
             generator: false,
-            // @ts-ignore
+            /**
+             * Compatibility of libraries
+             * 
+             * @ts-expect-error */
             expression: false
           },
           kind: 'method',
@@ -340,7 +355,10 @@ describe('test scope\'s context node', () => {
             },
             async: false,
             generator: false,
-            // @ts-ignore
+            /**
+             * Compatibility of libraries
+             * 
+             * @ts-expect-error */
             expression: false
           },
           kind: 'method',

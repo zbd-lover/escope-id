@@ -21,8 +21,7 @@
   "include": [
     "src/**/*",
     "test/**/*",
-    "debug.ts",
-    "debug.ts",
+    "test/debug.tsug.ts",
   ],
   "exclude": [
     "node_modules",

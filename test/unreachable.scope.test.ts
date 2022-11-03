@@ -1,5 +1,5 @@
-import { IdentifierInScope } from "../src";
-import { parseModule, parseScript } from "./helpers/parse";
+import { IdentifierInScope } from '../src'
+import { parseModule, parseScript } from './helpers/parse'
 
 describe('unreachable identifier test', () => {
   test('export named identifier', () => {

@@ -1,5 +1,5 @@
-import { IdentifierInScope } from "src";
-import { parseScript } from "./helpers/parse";
+import { IdentifierInScope } from 'src'
+import { parseScript } from './helpers/parse'
 
 type PartialIdentifierInScope1 = Omit<IdentifierInScope, 'imported' | 'exported'>
 
@@ -78,7 +78,7 @@ describe('ancestral identifier test', () => {
   })
 
   test('assignment expression', () => {
-    const script = `g_var1 = 10`
+    const script = 'g_var1 = 10'
     const res = parseScript(script)
     const target: PartialIdentifierInScope1 = {
       name: 'g_var1',
@@ -110,7 +110,7 @@ describe('ancestral identifier test', () => {
   })
 
   test('unary expression', () => {
-    const script = `+g_var1`
+    const script = '+g_var1'
     const res = parseScript(script)
     const target: PartialIdentifierInScope1 = {
       name: 'g_var1',
@@ -121,7 +121,7 @@ describe('ancestral identifier test', () => {
   })
 
   test('update expression', () => {
-    const script = `g_var1++`
+    const script = 'g_var1++'
     const res = parseScript(script)
     const target: PartialIdentifierInScope1 = {
       name: 'g_var1',
@@ -146,7 +146,7 @@ describe('ancestral identifier test', () => {
   })
 
   test('logical expression', () => {
-    const script = `const var1 = "" || g_var1`
+    const script = 'const var1 = "" || g_var1'
     const res = parseScript(script)
     const target: PartialIdentifierInScope1 = {
       name: 'g_var1',
@@ -192,7 +192,7 @@ describe('ancestral identifier test', () => {
   })
 
   test('new expression', () => {
-    const script = `new GClass()`
+    const script = 'new GClass()'
     const res = parseScript(script)
     const target: PartialIdentifierInScope1 = {
       name: 'GClass',
@@ -268,7 +268,7 @@ describe('ancestral identifier test', () => {
   })
 
   test('super class', () => {
-    const script = `class A extends B {}`
+    const script = 'class A extends B {}'
     const target: IdentifierInScope = {
       name: 'B',
       type: 'unknown',

@@ -1,5 +1,5 @@
-import { IdentifierInScope } from "src"
-import { parseScript } from "./helpers/parse"
+import { IdentifierInScope } from 'src'
+import { parseScript } from './helpers/parse'
 
 const script = `
   console.log(g_var1)  

@@ -1,6 +1,6 @@
-import { WithStatement } from "estree";
-import parse, { IdentifierInScope } from "../src";
-import { parseScript, parseModule } from "./helpers/parse";
+import { WithStatement } from 'estree'
+import parse, { IdentifierInScope } from '../src'
+import { parseScript, parseModule } from './helpers/parse'
 
 describe('test of lang feature', () => {
   test('delay determining identifier type', () => {
@@ -172,7 +172,7 @@ describe('test of lang feature', () => {
   })
 
   test('template str', () => {
-    const script = "const var1 = 10;const str = `${var1}_${g_var1}`"
+    const script = 'const var1 = 10;const str = `${var1}_${g_var1}`'
     const res = parseScript(script)
     const target: IdentifierInScope[] = [
       {

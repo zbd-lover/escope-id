@@ -1,6 +1,6 @@
-import { parse as parseAST, Options } from "acorn"
-import { Program } from "estree";
-import parseId from "../../src";
+import { parse as parseAST, Options } from 'acorn'
+import { Program } from 'estree'
+import parseId from '../../src'
 
 const options1: Options = {
   ecmaVersion: 2021,
@@ -12,14 +12,14 @@ const options2: Options = {
   sourceType: 'module',
 }
 
-function getProgram(script: string, options: Options) {
+function getProgram (script: string, options: Options) {
   return parseAST(script, options) as unknown as Program
 }
 
-export function parseScript(script: string) {
+export function parseScript (script: string) {
   return parseId(getProgram(script, options1))
 }
 
-export function parseModule(script: string) {
+export function parseModule (script: string) {
   return parseId(getProgram(script, options2))
 }

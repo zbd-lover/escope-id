@@ -1,6 +1,6 @@
 
-import { IdentifierInScope } from "../src";
-import { parseModule, parseScript } from "./helpers/parse";
+import { IdentifierInScope } from '../src'
+import { parseModule, parseScript } from './helpers/parse'
 
 type PartialIdentifierInScope1 = Omit<IdentifierInScope, 'imported' | 'exported'>
 
@@ -173,7 +173,7 @@ describe('local varialbe test', () => {
   })
 
   test('export variable declarataion directly', () => {
-    const script = `export let var4 = 10`
+    const script = 'export let var4 = 10'
     const res = parseModule(script)
     const target: IdentifierInScope = {
       name: 'var4',
@@ -188,7 +188,7 @@ describe('local varialbe test', () => {
 
 describe('local function test', () => {
   test('function declarataion will as local identifier', () => {
-    const script = `function a() {}`
+    const script = 'function a() {}'
     const res = parseScript(script)
     const target: PartialIdentifierInScope1 = {
       name: 'a',
@@ -199,7 +199,7 @@ describe('local function test', () => {
   })
 
   test('function expression will not as local identifier', () => {
-    const script = `const fn1 = function fn1() {}`
+    const script = 'const fn1 = function fn1() {}'
     const res = parseScript(script)
     const target: PartialIdentifierInScope1 = {
       name: 'fn1',
@@ -210,7 +210,7 @@ describe('local function test', () => {
   })
 
   test('arrow function expression will not as local identifier', () => {
-    const script = `const fn1 =  () => {}`
+    const script = 'const fn1 =  () => {}'
     const res = parseScript(script)
     const target: PartialIdentifierInScope1 = {
       name: 'fn1',
@@ -221,7 +221,7 @@ describe('local function test', () => {
   })
 
   test('export function declaration directly', () => {
-    const script = `export function fn1() {}`
+    const script = 'export function fn1() {}'
     const res = parseModule(script)
     const target: IdentifierInScope = {
       name: 'fn1',
@@ -234,7 +234,7 @@ describe('local function test', () => {
   })
 
   test('default function declaration exports, directly', () => {
-    const script = `export default function fn1() {}`
+    const script = 'export default function fn1() {}'
     const res = parseModule(script)
     const ids: IdentifierInScope = {
       name: 'fn1',
@@ -249,7 +249,7 @@ describe('local function test', () => {
 
 describe('local class test', () => {
   test('class declarataion will as local identifier', () => {
-    const script = `class A {}`
+    const script = 'class A {}'
     const res = parseScript(script)
     const target: PartialIdentifierInScope1 = {
       name: 'A',
@@ -260,7 +260,7 @@ describe('local class test', () => {
   })
 
   test('class expression will not as local identifier', () => {
-    const script = `const B = class B {}`
+    const script = 'const B = class B {}'
     const res = parseScript(script)
     const target: PartialIdentifierInScope1 = {
       name: 'B',
@@ -306,7 +306,7 @@ describe('local class test', () => {
   })
 
   test('super class', () => {
-    const script = `class B {} class A extends B {}`
+    const script = 'class B {} class A extends B {}'
     const target: IdentifierInScope[] = [
       {
         name: 'B',
@@ -328,7 +328,7 @@ describe('local class test', () => {
   })
 
   test('export class declaration directly', () => {
-    const script = `export class A {}`
+    const script = 'export class A {}'
     const res = parseModule(script)
     const target: IdentifierInScope = {
       name: 'A',
@@ -341,7 +341,7 @@ describe('local class test', () => {
   })
 
   test('default function declaration exports, directly', () => {
-    const script = `export default class A {}`
+    const script = 'export default class A {}'
     const res = parseModule(script)
     const ids: IdentifierInScope = {
       name: 'A',
@@ -356,7 +356,7 @@ describe('local class test', () => {
 
 describe('local argument test', () => {
   test('function argument', () => {
-    const script = `function test(a, b, { c }) {}`
+    const script = 'function test(a, b, { c }) {}'
     const target: PartialIdentifierInScope1[] = [
       {
         name: 'a',
@@ -379,7 +379,7 @@ describe('local argument test', () => {
   })
 
   test('catch clause argument, 1', () => {
-    const script = `try {} catch(err) {} finally {}`
+    const script = 'try {} catch(err) {} finally {}'
     const target: PartialIdentifierInScope1 = {
       name: 'err',
       type: 'argument',
@@ -390,7 +390,7 @@ describe('local argument test', () => {
   })
 
   test('catch clause argument, 2', () => {
-    const script = `try {} catch({ a }) {} finally {}`
+    const script = 'try {} catch({ a }) {} finally {}'
     const target: PartialIdentifierInScope1 = {
       name: 'a',
       type: 'argument',

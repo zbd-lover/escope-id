@@ -4,7 +4,7 @@ import {
   ForOfStatement,
   ForStatement,
   BlockStatement,
-  Function,
+  Function as ESTFunction,
   Program,
   CatchClause,
   WithStatement,
@@ -43,7 +43,7 @@ export type IdentifierInScope = LocalId | AncestralId | UnreachableId
 export type IdentifierMatcher = (identifier: IdentifierInScope) => boolean
 
 export type ScopeNode = Program |
-  Function |
+  ESTFunction |
   BlockStatement |
   ForStatement |
   ForInStatement |
@@ -59,21 +59,21 @@ export default class Scope {
   public children: Scope[]
   public identifiers: IdentifierInScope[]
 
-  constructor(node: ScopeNode) {
+  constructor (node: ScopeNode) {
     this.node = node
     this.parent = null
     this.children = []
     this.identifiers = []
   }
 
-  public setParent(parent: Scope | null) {
+  public setParent (parent: Scope | null) {
     this.parent = parent
     if (parent) {
       this.parent?.children.push(this)
     }
   }
 
-  public addId(id: IdentifierInScope, hoisted?: boolean) {
+  public addId (id: IdentifierInScope, hoisted?: boolean) {
     const { name, type, scope, imported, exported } = id
     if (this.identifiers.some((id) => {
       return id.type === type &&
@@ -102,8 +102,8 @@ export default class Scope {
       const index = this.identifiers.findIndex((id) =>
         id.name === name &&
         (
-          (id.scope === 'ancestral' && id.type === 'unknown')  ||
-          (id.scope === 'unreachable' && id.type === 'function') || 
+          (id.scope === 'ancestral' && id.type === 'unknown') ||
+          (id.scope === 'unreachable' && id.type === 'function') ||
           (id.scope === 'unreachable' && id.type === 'class')
         )
       )
@@ -119,26 +119,27 @@ export default class Scope {
 
   // tools
 
-  public hasId(finder: string | IdentifierMatcher) {
+  public hasId (finder: string | IdentifierMatcher) {
     if (typeof finder === 'string') {
       return !!this.identifiers.find((id) => id.name === finder)
     }
     return !!this.identifiers.find(finder)
   }
 
-  public hasGlobalId(name: string) {
-    let base: Scope | null = this;
+  public hasGlobalId (name: string) {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
+    let base: Scope | null = this
     while (base && base.hasId((id) => id.name === name && id.scope === 'ancestral')) {
       base = base.parent
     }
     return base === null
   }
 
-  public getIds(matcher: IdentifierMatcher) {
+  public getIds (matcher: IdentifierMatcher) {
     return this.identifiers.filter(matcher)
   }
 
-  public getAllGlobalIds() {
+  public getAllGlobalIds () {
     return this.identifiers.filter((id) => this.hasGlobalId(id.name))
   }
 }
