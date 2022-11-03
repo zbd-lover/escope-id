@@ -75,7 +75,7 @@ describe('test special scene', () => {
     expect(res.identifiers).toEqual([_window])
   })
 
-  test('default variable exports, after declaration', () => {
+  test('default variable exports1, after declaration', () => {
     const script = `
       let var1
       export default var1
@@ -91,7 +91,25 @@ describe('test special scene', () => {
     expect(res.identifiers[0]).toEqual(target)
   })
 
-  test('default variable exports, before declaration', () => {
+  test('default variable exports2, after declaration', () => {
+    const script = `
+      let var1
+      export {
+        var1 as default
+      }
+    `
+    const res = parseModule(script)
+    const target: IdentifierInScope = {
+      name: 'var1',
+      scope: 'local',
+      type: 'variable',
+      imported: false,
+      exported: true
+    }
+    expect(res.identifiers[0]).toEqual(target)
+  })
+
+  test('default variable exports1, before declaration', () => {
     const script = `
       export default var1
       let var1
@@ -107,7 +125,25 @@ describe('test special scene', () => {
     expect(res.identifiers[0]).toEqual(target)
   })
 
-  test('default function declaration exports, after declaration', () => {
+  test('default variable exports2, before declaration', () => {
+    const script = `
+      export {
+        var1 as default
+      }
+      let var1
+    `
+    const res = parseModule(script)
+    const target: IdentifierInScope = {
+      name: 'var1',
+      scope: 'local',
+      type: 'variable',
+      imported: false,
+      exported: true
+    }
+    expect(res.identifiers[0]).toEqual(target)
+  })
+
+  test('default function declaration exports1, after declaration', () => {
     const script = `
       function fn1() {}
       export default fn1
@@ -123,7 +159,25 @@ describe('test special scene', () => {
     expect(res.identifiers[0]).toEqual(target)
   })
 
-  test('default function declaration exports, before declaration', () => {
+  test('default function declaration exports2, after declaration', () => {
+    const script = `
+      function fn1() {}
+      export {
+        fn1 as default
+      }
+    `
+    const res = parseModule(script)
+    const target: IdentifierInScope = {
+      name: 'fn1',
+      type: 'function',
+      scope: 'local',
+      imported: false,
+      exported: true
+    }
+    expect(res.identifiers[0]).toEqual(target)
+  })
+
+  test('default function declaration exports1, before declaration', () => {
     const script = `
       export default fn1
       function fn1() {}
@@ -139,7 +193,25 @@ describe('test special scene', () => {
     expect(res.identifiers[0]).toEqual(target)
   })
 
-  test('default class declaration exports, after declaration', () => {
+  test('default function declaration exports2, before declaration', () => {
+    const script = `
+      export {
+        fn1 as default
+      }
+      function fn1() {}
+    `
+    const res = parseModule(script)
+    const target: IdentifierInScope = {
+      name: 'fn1',
+      type: 'function',
+      scope: 'local',
+      imported: false,
+      exported: true
+    }
+    expect(res.identifiers[0]).toEqual(target)
+  })
+
+  test('default class declaration exports1, after declaration', () => {
     const script = `
       class A {}
       export default A
@@ -155,7 +227,25 @@ describe('test special scene', () => {
     expect(res.identifiers[0]).toEqual(target)
   })
 
-  test('default class declaration exports, before declaration', () => {
+  test('default class declaration exports2, after declaration', () => {
+    const script = `
+      class A {}
+      export {
+        A as default
+      }
+    `
+    const res = parseModule(script)
+    const target: IdentifierInScope = {
+      name: 'A',
+      type: 'class',
+      scope: 'local',
+      imported: false,
+      exported: true
+    }
+    expect(res.identifiers[0]).toEqual(target)
+  })
+
+  test('default class declaration exports1, before declaration', () => {
     const script = `
       export default A
       class A {}
@@ -170,6 +260,25 @@ describe('test special scene', () => {
     }
     expect(res.identifiers[0]).toEqual(target)
   })
+
+  test('default class declaration exports2, before declaration', () => {
+    const script = `
+      export {
+        A as default
+      }
+      class A {}
+    `
+    const res = parseModule(script)
+    const target: IdentifierInScope = {
+      name: 'A',
+      type: 'class',
+      scope: 'local',
+      imported: false,
+      exported: true
+    }
+    expect(res.identifiers[0]).toEqual(target)
+  })
+
 
   test('template str', () => {
     const script = 'const var1 = 10;const str = `${var1}_${g_var1}`'

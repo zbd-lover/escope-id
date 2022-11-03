@@ -234,13 +234,23 @@ export default function parse (block: ScopeNode) {
               break
             case 'ExportSpecifier':
               if (parent.exported === node) {
-                addIdIntoCurrentScope({
-                  name: node.name,
-                  scope: 'unreachable',
-                  type: 'variable',
-                  exported: true,
-                  imported: false
-                })
+                if (node.name !== 'default') {
+                  addIdIntoCurrentScope({
+                    name: node.name,
+                    scope: 'unreachable',
+                    type: 'variable',
+                    exported: true,
+                    imported: false
+                  })
+                } else {
+                  addIdIntoCurrentScope({
+                    name: parent.local.name,
+                    scope: 'ancestral',
+                    type: 'unknown',
+                    exported: true,
+                    imported: false
+                  })
+                }
               }
               break
             // case 'ExportAllDeclaration':
