@@ -1,4 +1,4 @@
-import { IdentifierInScope } from 'src/index'
+import { IdentifierInScope } from '../src/index'
 import { parseModule, parseScript } from './helpers/parse'
 
 type PartialIdentifierInScope1 = Omit<IdentifierInScope, 'imported' | 'exported'>

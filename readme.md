@@ -93,6 +93,8 @@ import {
   ClassBody
 } from 'estree'
 
+declare function parse(block: ScopeNode): Scope
+
 type ScopeNode = Program |
   Function |
   BlockStatement |

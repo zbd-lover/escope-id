@@ -1,5 +1,5 @@
-import { parseModule, parseScript } from './helpers/parse'
 import { ScopeNode } from '../src/index'
+import { parseModule, parseScript } from './helpers/parse'
 
 function withoutPos (node: unknown) {
   if (node === null || node === undefined) return node

@@ -1,4 +1,4 @@
-import { IdentifierInScope } from 'src/index'
+import { IdentifierInScope } from '../src/index'
 import { parseScript } from './helpers/parse'
 
 const script = `
