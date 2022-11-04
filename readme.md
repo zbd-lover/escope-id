@@ -9,8 +9,6 @@ import { parse } from 'estree-identifier-parser'
 // in global
 const { parse } = window.EstIdParser
 ```
-### signature
-(node: ScopeNode) => Scope
 ### example
 ``` javascript
 import { parse } from 'estree-identifier-parser';

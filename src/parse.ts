@@ -60,6 +60,12 @@ export default function parse (block: ScopeNode) {
         return
       }
 
+      // can't support
+      if (node.type === 'MetaProperty') {
+        this.skip()
+        return
+      }
+      
       if (!parent) return
 
       if (parent.type === 'VariableDeclarator' && parent.init === node) {

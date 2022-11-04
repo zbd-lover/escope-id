@@ -279,7 +279,6 @@ describe('test special scene', () => {
     expect(res.identifiers[0]).toEqual(target)
   })
 
-
   test('template str', () => {
     const script = 'const var1 = 10;const str = `${var1}_${g_var1}`'
     const res = parseScript(script)
@@ -307,5 +306,17 @@ describe('test special scene', () => {
       },
     ]
     expect(res.identifiers).toEqual(target)
+  })
+
+  test('import.meta', () => {
+    const script = 'import.meta'
+    const res = parseModule(script)
+    expect(res.identifiers).toEqual([])
+  })
+
+  test('new.target', () => {
+    const script = 'function Person() { if (new.target) {} }'
+    const res = parseScript(script)
+    expect(res.children[0].identifiers).toEqual([])
   })
 })
