@@ -1,7 +1,5 @@
 # Profile
 Analyze the definition of identifier based on estree.
-# Install
-`npm i estree-identifer-parser --save`
 # Api
 ## parse
 ### import

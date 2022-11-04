@@ -1,6 +1,6 @@
 {
   "name": "estree-identifier-parser",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Analyze the definition of identifier based on estree",
   "main": "lib/estree-identifier-parser.js",
   "unpkg": "dist/estree-identifier-parser.js",
@@ -17,7 +17,7 @@
     "test": "jest",
     "clean": "rimraf lib dist es",
     "coverage": "jest --coverage",
-    "tsd": "tsc --declaration true --emitDeclarationOnly true",
+    "tsd": "tsc --declaration true --emitDeclarationOnly true --declarationDir ./types",
     "lint": "eslint --ext ts src test",
     "fix:lint": "eslint  --fix ./src ./test",
     "prepublish": "npm run clean && npm run tsd && npm run test && npm run lint && npm run fix:lint",

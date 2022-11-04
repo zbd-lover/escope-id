@@ -17,8 +17,7 @@
     "removeComments": false,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "baseUrl": "./",
-    "declarationDir": "./types"
+    "baseUrl": "./"
   },
   "include": [
     "src/**/*",
