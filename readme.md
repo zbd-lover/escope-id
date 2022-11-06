@@ -2,7 +2,7 @@
 Analyze the definition of identifier based on estree.
 # Api
 ## parse
-### import
+### use
 ``` javascript
 // in esmodule
 import { parse } from 'estree-identifier-parser'
@@ -58,7 +58,7 @@ const { identifiers } = parse(script)
 expect(identifiers).toEqual(target) // true
 ```
 ## scope
-### import
+### use
 ```javascript
 // in esmodule
 import { Scope } from 'estree-identifier-parser'
