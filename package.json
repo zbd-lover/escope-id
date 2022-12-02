@@ -1,6 +1,6 @@
 {
   "name": "estree-identifier-parser",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "Analyze the definition of identifier based on estree",
   "main": "lib/estree-identifier-parser.js",
   "unpkg": "dist/estree-identifier-parser.js",
