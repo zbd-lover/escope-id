@@ -1,5 +1,5 @@
 import parse from './parse'
-import Scope, { ScopeNode, IdScope, IdType, IdentifierInScope, IdentifierMatcher } from './scope'
+import Scope, { type ScopeNode, IdScope, IdType, IdentifierInScope, IdentifierMatcher } from './scope'
 
 export {
   parse,

@@ -1,6 +1,6 @@
 {
   "name": "estree-identifier-parser",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "Analyze the definition of identifier based on estree",
   "main": "lib/estree-identifier-parser.js",
   "unpkg": "dist/estree-identifier-parser.js",
@@ -35,7 +35,7 @@
   "author": "BaoDi Zheng",
   "license": "MIT",
   "dependencies": {
-    "@types/estree": "^0.0.50",
+    "@types/estree": "^1.0.0",
     "estraverse": "^5.3.0"
   },
   "devDependencies": {

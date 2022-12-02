@@ -1,6 +1,6 @@
 import { traverse } from 'estraverse'
-import { ClassExpression, ObjectExpression, ObjectPattern } from 'estree'
-import Scope, { ScopeNode, IdType, IdentifierInScope } from './scope'
+import type { ClassExpression, ObjectExpression, ObjectPattern } from 'estree'
+import Scope, { type ScopeNode, IdType, IdentifierInScope } from './scope'
 
 function hasLocalId (scope: Scope, name: string) {
   return scope.hasId((id) => id.name === name && id.scope === 'local')
@@ -65,7 +65,7 @@ export default function parse (block: ScopeNode) {
         this.skip()
         return
       }
-      
+
       if (!parent) return
 
       if (parent.type === 'VariableDeclarator' && parent.init === node) {
