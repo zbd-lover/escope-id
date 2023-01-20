@@ -319,4 +319,29 @@ describe('test special scene', () => {
     const res = parseScript(script)
     expect(res.children[0].identifiers).toEqual([])
   })
+
+
+  test('arrow-fun-exp', () => {
+    const script = `
+      useEffect(() => []);
+      console.log(123)
+    `
+    const res = parseScript(script)
+    expect(res.identifiers).toEqual([
+      {
+        name: 'useEffect',
+        type: 'unknown',
+        scope: 'ancestral',
+        imported: false,
+        exported: false
+      },
+      {
+        name: 'console',
+        type: 'unknown',
+        scope: 'ancestral',
+        imported: false,
+        exported: false
+      }
+    ] as IdentifierInScope[])
+  })
 })

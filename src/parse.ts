@@ -403,6 +403,13 @@ export default function parse (block: ScopeNode) {
           inClassExpBlock = false
           stack.pop()
           break
+        case 'ArrowFunctionExpression':
+          if (node.expression) {
+            inFunctionExpBlock = false
+            inClassExpBlock = false
+            stack.pop()
+          }
+          break
         case 'FunctionExpression':
           inFunctionExpContext = false
           break
