@@ -1,15 +1,29 @@
-import parse from './parse'
-import Scope, { type ScopeNode, IdScope, IdType, IdentifierInScope, IdentifierMatcher } from './scope'
+import {
+  VisitorKeys,
+  VisitorOption,
+  Syntax,
+  Controller,
+  NodeType,
+  attachComments,
+  cloneEnvironment
+} from 'estraverse'
+
+import analyze from './analyze'
+import { traverse, replace, type Visitor } from './iterate'
 
 export {
-  parse,
-  Scope
+  analyze,
+  traverse,
+  replace,
+  attachComments,
+  cloneEnvironment
 }
 
 export type {
-  ScopeNode,
-  IdentifierMatcher,
-  IdType as IdentifierType,
-  IdScope as IdentifierScope,
-  IdentifierInScope
+  Visitor,
+  VisitorKeys,
+  VisitorOption,
+  Syntax,
+  Controller,
+  NodeType
 }
