@@ -6,9 +6,12 @@ import type {
   Function as ESTFunction,
   Program,
   CatchClause,
+  Class,
 } from 'estree'
 
-export type IdType = 'variable' | 'function' | 'class' | 'argument' | 'module' | 'unknown'
+export type IdType = 'variable' | 'function' | 'class' | 'argument' |
+  'import' | 'unknown' |
+  'property' | 'method' | 'get' | 'set' | 'constructor'
 
 export type ScopeNode = Program |
   ESTFunction |
@@ -16,16 +19,18 @@ export type ScopeNode = Program |
   ForStatement |
   ForInStatement |
   ForOfStatement |
-  CatchClause
+  CatchClause |
+  Class
 
 export interface IdentifierInScope {
   type: IdType,
   name: string,
   local: boolean,
   hoisted: boolean,
+  static: boolean
 }
 
-export default class Scope {
+export class Scope {
   public readonly node: ScopeNode
   public readonly parent: Scope | null
   public readonly children: Scope[]
@@ -75,26 +80,36 @@ export default class Scope {
       baseScope = baseScope.parent
     }
 
-    // if (this.node.type === 'FunctionExpression') {
-
-    // }
     // 边界情况1：
     // const a = function A() { console.log(A) }
     // 函数名为A的函数表达式在全局作用域中并不存在
     // 但它的类型我们可以确定为：'function'
+
+    // 边界情况2 （与1很像）
+
+    // if (this.node.type === 'FunctionExpression') {
+
+    // }
 
     for (const childScope of this.children) {
       childScope.finalize()
     }
   }
 
-  public where(name: string) {
-    const id = this.find(name)
-    if (!id) return 'global'
-    return id.local ? 'local' : id.type !== 'unknown' ? 'outer' : 'global'
+  public where(id: IdentifierInScope) {
+    return id.local ? 'local' : id.type !== 'unknown' ? 'ancestral' : 'global'
   }
 
   public find(name: string) {
-    return this.identifiers.find((id) => id.name === name)
+    return this.identifiers.find((id) => id.name === name) || null
+  }
+
+  public findLast(name: string) {
+    for (let i = 0, l = this.identifiers.length; i < l; i++) {
+      if (this.identifiers[i].name === name) {
+        return this.identifiers[i]
+      }
+    }
+    return null
   }
 }

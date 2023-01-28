@@ -1,33 +1,20 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import * as ESTree from 'estree'
 import { traverse, Syntax } from 'estraverse'
-import Scope, { type IdentifierInScope, ScopeNode, IdType } from './scope'
-
-function isScopeEdge(node: ESTree.Node, parent: ESTree.Node | null): node is (ESTree.ArrowFunctionExpression | ESTree.BlockStatement) {
-  return (node.type === 'ArrowFunctionExpression' && node.expression) ||
-    (node.type === 'BlockStatement' && !!parent && (parent.type !== 'ClassBody' && parent.type !== 'WithStatement')) // 不支持对with的解析
-}
+import { Scope, type IdentifierInScope, ScopeNode, IdType } from './scope'
 
 function isFunctionNode(node: ESTree.Node): node is ESTree.Function {
   return node.type === 'FunctionDeclaration' || node.type === 'FunctionExpression' || node.type === 'ArrowFunctionExpression'
 }
 
-// function isBindingPattern(node: ESTree.Node): node is ESTree.ObjectPattern | ESTree.ArrayPattern {
-//   return node.type === 'ObjectPattern' || node.type === 'ArrayPattern'
-// }
-
 export default function analyze(node: ScopeNode) {
-  // 是否在解构上下文中
+  /** 是否在解构上下文中 */
   let inPatternCtx = false
-  // let inVariableDeclaratorNode = false
-  // let inFunctionParamsNode = false
   let currentVarKind: 'let' | 'var' | 'const' | null = null
 
-  let lastIdType: IdType = 'unknown'
   let currentIdType: IdType = 'unknown'
-  function setCurrentIdType(type: IdType | 'before') {
-    lastIdType = currentIdType
-    currentIdType = type === 'before' ? lastIdType : type
+  function setCurrentIdType(type: IdType) {
+    currentIdType = type
   }
   function consumeCurrentIdType() {
     const ret = currentIdType
@@ -45,17 +32,17 @@ export default function analyze(node: ScopeNode) {
 
   traverse(node, {
     keys: {
+      [Syntax['MetaProperty']]: [],
       [Syntax['BreakStatement']]: [],
       [Syntax['ContinueStatement']]: [],
       [Syntax['LabeledStatement']]: ['body'],
-
+      [Syntax['ImportExpression']]: [],
+      [Syntax['ImportDeclaration']]: ['specifiers'],
+      [Syntax['ImportSpecifier']]: ['local'],
       [Syntax['ExportNamedDeclaration']]: ['declaration'],
-      // [Syntax['ExportSpecifier']]: [],
       [Syntax['ExportAllDeclaration']]: [],
-
-      // test
-      [Syntax['MethodDefinition']]: ['value'],
-      [Syntax['TemplateLiteral']]: ['expressions']
+      [Syntax['TemplateLiteral']]: ['expressions'],
+      [Syntax['WithStatement']]: ['object']
     },
 
     enter(node, parent) {
@@ -80,7 +67,19 @@ export default function analyze(node: ScopeNode) {
         inPatternCtx = false
       }
 
-      if (node.type === 'FunctionDeclaration') {
+      if (
+        node.type === 'ImportDefaultSpecifier' ||
+        node.type === 'ImportSpecifier' ||
+        node.type === 'ImportNamespaceSpecifier'
+      ) {
+        setCurrentIdType('import')
+      } else if (node.type === 'PropertyDefinition') {
+        if (!node.computed) {
+          setCurrentIdType('property')
+        }
+      } else if (node.type === 'MethodDefinition') {
+        setCurrentIdType(node.kind)
+      } else if (node.type === 'FunctionDeclaration') {
         setCurrentIdType('function')
       } else if (node.type === 'ClassDeclaration') {
         setCurrentIdType('class')
@@ -93,10 +92,11 @@ export default function analyze(node: ScopeNode) {
         inPatternCtx = true
       } else if (node.type === 'Identifier' && parent) {
         const shouldSkip = (
-          parent.type === 'Property' && parent.key === node && !parent.computed ||
-          parent.type === 'MemberExpression' && parent.property === node && !parent.computed ||
-          parent.type === 'FunctionExpression' && parent.id === node ||
-          parent.type === 'ClassExpression' && (parent.id === node || parent.superClass === node)
+          (parent.type === 'Property' && parent.key === node && !parent.computed) ||
+          (parent.type === 'MemberExpression' && parent.property === node && !parent.computed) ||
+          (parent.type === 'FunctionExpression' && parent.id === node) ||
+          (parent.type === 'ClassExpression' && (parent.id === node)) ||
+          (parent.type === 'PropertyDefinition' && parent.key === node && parent.computed)
         )
         if (shouldSkip) return
 
@@ -105,6 +105,8 @@ export default function analyze(node: ScopeNode) {
         if (inPatternCtx) {
           if (
             (isFunctionNode(parent) && parent.params.some((param) => param === node)) ||
+            (parent.type === 'ArrayPattern' && parent.elements.some((element) => element === node)) ||
+            (parent.type === 'CatchClause' && parent.param === node) ||
             (parent.type === 'VariableDeclarator' && parent.id === node) ||
             (parent.type === 'RestElement') ||
             (parent.type === 'AssignmentPattern' && parent.left === node) ||
@@ -125,29 +127,43 @@ export default function analyze(node: ScopeNode) {
         }
 
         type = consumeCurrentIdType()
-        const local = type !== 'unknown'
+        const local = type !== 'unknown' && type !== 'get' && type !== 'set' && type !== 'constructor' && type !== 'method' && type !== 'property'
         const hoisted = type === 'function' || (type === 'variable' && currentVarKind === 'var')
+        const isStatic = (parent.type === 'PropertyDefinition' || parent.type === 'MethodDefinition') && parent.static && parent.key === node
         pushIdToCurrentScope({
           name: node.name,
           hoisted,
           type,
-          local
+          local,
+          static: isStatic
         })
       }
     },
 
     leave(node, parent) {
-      if (isScopeEdge(node, parent)) {
+      if (!parent) return
+      if (
+        (node.type === 'ArrowFunctionExpression' && node.expression) ||
+        (node.type === 'BlockStatement')
+      ) {
         inPatternCtx = false
         currentScope = currentScope?.parent || null
       } else if (node.type === 'VariableDeclaration') {
         currentVarKind = null
-      } else if (node.type === 'Identifier' && parent) {
+      } else if (node.type === 'Identifier') {
         if (parent.type === 'FunctionDeclaration' && parent.id === node) {
           inPatternCtx = true
           currentScope = new Scope(currentScope, parent)
         } else if (parent.type === 'VariableDeclarator' && parent.id === node) {
           inPatternCtx = false
+        } else if (parent.type === 'ClassDeclaration' || parent.type === 'ClassExpression') {
+          if (parent.superClass) {
+            if (parent.superClass === node) {
+              currentScope = new Scope(currentScope, parent)
+            }
+          } else if (parent.id === node) {
+            currentScope = new Scope(currentScope, parent)
+          }
         }
       }
     }

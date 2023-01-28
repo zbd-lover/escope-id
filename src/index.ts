@@ -10,6 +10,7 @@ import {
 
 import analyze from './analyze'
 import { traverse, replace, type Visitor } from './iterate'
+export * from './scope'
 
 export {
   analyze,

@@ -1,6 +1,6 @@
 {
-  "name": "estree-identifier-parser",
-  "version": "1.0.8",
+  "name": "escope-id",
+  "version": "1.0.0",
   "description": "Analyze the definition of identifier based on estree",
   "main": "lib/estree-identifier-parser.js",
   "unpkg": "dist/estree-identifier-parser.js",
@@ -25,6 +25,7 @@
   },
   "keywords": [
     "estree",
+    "escope",
     "identifier",
     "analysis of identifier"
   ],
