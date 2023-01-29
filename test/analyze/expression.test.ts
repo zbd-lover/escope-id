@@ -363,7 +363,7 @@ describe('测试表达式中的标识符是否被正确分析', () => {
     )
   })
 
-  test('对象成员访问表达式（不使用可选链操作符）', () => {
+  test('对象成员访问表达式（不使用可选链操作符，且property为静态）', () => {
     const script = 'const obj = {}; obj.name'
     const topScope = analyzeScript(script)
     expect(topScope.identifiers).toEqual(
@@ -379,7 +379,30 @@ describe('测试表达式中的标识符是否被正确分析', () => {
     )
   })
 
-  test('对象成员访问表达式（使用可选链操作符）', () => {
+  test('对象成员访问表达式（不使用可选链操作符，且property为动态）', () => {
+    const script = 'const obj = {}; obj[name]'
+    const topScope = analyzeScript(script)
+    expect(topScope.identifiers).toEqual(
+      [
+        {
+          name: 'obj',
+          type: 'variable',
+          hoisted: false,
+          static: false,
+          local: true
+        },
+        {
+          name: 'name',
+          type: 'unknown',
+          hoisted: false,
+          static: false,
+          local: false
+        }
+      ] as IdentifierInScope[]
+    )
+  })
+
+  test('对象成员访问表达式（使用可选链操作符，且property为静态）', () => {
     const script = 'const obj = {}; obj?.name'
     const topScope = analyzeScript(script)
     expect(topScope.identifiers).toEqual(
@@ -390,6 +413,29 @@ describe('测试表达式中的标识符是否被正确分析', () => {
           hoisted: false,
           static: false,
           local: true
+        }
+      ] as IdentifierInScope[]
+    )
+  })
+
+  test('对象成员访问表达式（使用可选链操作符，且property为动态）', () => {
+    const script = 'const obj = {}; obj?.[name]'
+    const topScope = analyzeScript(script)
+    expect(topScope.identifiers).toEqual(
+      [
+        {
+          name: 'obj',
+          type: 'variable',
+          hoisted: false,
+          static: false,
+          local: true
+        },
+        {
+          name: 'name',
+          type: 'unknown',
+          hoisted: false,
+          static: false,
+          local: false
         }
       ] as IdentifierInScope[]
     )

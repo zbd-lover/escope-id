@@ -58,9 +58,19 @@ export default function analyze(node: ScopeNode) {
         node.type === 'CatchClause' ||
         node.type === 'FunctionExpression' ||
         node.type === 'ArrowFunctionExpression' ||
-        node.type === 'BlockStatement' && parent && (parent.type === 'Program' || parent.type === 'BlockStatement')
+        (node.type === 'BlockStatement' && parent && (
+          parent.type === 'Program' ||
+          parent.type === 'BlockStatement' ||
+          parent.type === 'IfStatement' ||
+          parent.type === 'WhileStatement' ||
+          parent.type === 'DoWhileStatement' ||
+          parent.type === 'SwitchStatement' ||
+          parent.type === 'TryStatement'
+        ))
       ) {
         currentScope = new Scope(currentScope, node)
+      } else if (node.type === 'ClassBody') {
+        currentScope = new Scope(currentScope, parent as ESTree.Class)
       }
 
       if (node.type === 'BlockStatement') {
@@ -141,29 +151,21 @@ export default function analyze(node: ScopeNode) {
     },
 
     leave(node, parent) {
-      if (!parent) return
       if (
         (node.type === 'ArrowFunctionExpression' && node.expression) ||
-        (node.type === 'BlockStatement')
+        (node.type === 'BlockStatement') ||
+        (node.type === 'ClassBody')
       ) {
         inPatternCtx = false
         currentScope = currentScope?.parent || null
       } else if (node.type === 'VariableDeclaration') {
         currentVarKind = null
-      } else if (node.type === 'Identifier') {
+      } else if (node.type === 'Identifier' && parent) {
         if (parent.type === 'FunctionDeclaration' && parent.id === node) {
           inPatternCtx = true
           currentScope = new Scope(currentScope, parent)
         } else if (parent.type === 'VariableDeclarator' && parent.id === node) {
           inPatternCtx = false
-        } else if (parent.type === 'ClassDeclaration' || parent.type === 'ClassExpression') {
-          if (parent.superClass) {
-            if (parent.superClass === node) {
-              currentScope = new Scope(currentScope, parent)
-            }
-          } else if (parent.id === node) {
-            currentScope = new Scope(currentScope, parent)
-          }
         }
       }
     }

@@ -158,7 +158,7 @@ describe('测试函数是否被正确分析', () => {
     )
   })
 
-  test('箭头函数表达式（不携带语句块）', () => {
+  test('箭头函数表达式（直接返回表达式）', () => {
     const script = 'const fn1 = (a, { b = c }, d) => null'
     const topScope = analyzeScript(script)
     expect(topScope.children.length).toBe(1)

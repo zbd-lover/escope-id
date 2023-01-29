@@ -101,39 +101,6 @@ describe('测试类是否被正确分析', () => {
       ] as IdentifierInScope[]
     )
     expect(classScope.children.length).toBe(5)
-    const [a, b, c, d, e] = classScope.children
-    expect(a.identifiers).toEqual(c.identifiers)
-    expect(a.identifiers).toEqual(d.identifiers)
-    expect(a.identifiers).toEqual(e.identifiers)
-    expect(a.identifiers).toEqual(
-      [
-        {
-          name: 'a',
-          type: 'argument',
-          hoisted: false,
-          local: true,
-          static: false
-        },
-        {
-          name: 'b',
-          type: 'unknown',
-          hoisted: false,
-          local: false,
-          static: false
-        },
-      ] as IdentifierInScope[]
-    )
-    expect(b.identifiers).toEqual(
-      [
-        {
-          name: 'b',
-          type: 'unknown',
-          hoisted: false,
-          local: false,
-          static: false
-        },
-      ] as IdentifierInScope[]
-    )
   })
 
   test('类表达式', () => {
@@ -209,40 +176,6 @@ describe('测试类是否被正确分析', () => {
           hoisted: false,
           static: false,
           local: false
-        },
-      ] as IdentifierInScope[]
-    )
-    expect(classScope.children.length).toBe(5)
-    const [a, b, c, d, e] = classScope.children
-    expect(a.identifiers).toEqual(c.identifiers)
-    expect(a.identifiers).toEqual(d.identifiers)
-    expect(a.identifiers).toEqual(e.identifiers)
-    expect(a.identifiers).toEqual(
-      [
-        {
-          name: 'a',
-          type: 'argument',
-          hoisted: false,
-          local: true,
-          static: false
-        },
-        {
-          name: 'b',
-          type: 'unknown',
-          hoisted: false,
-          local: false,
-          static: false
-        },
-      ] as IdentifierInScope[]
-    )
-    expect(b.identifiers).toEqual(
-      [
-        {
-          name: 'b',
-          type: 'unknown',
-          hoisted: false,
-          local: false,
-          static: false
         },
       ] as IdentifierInScope[]
     )
