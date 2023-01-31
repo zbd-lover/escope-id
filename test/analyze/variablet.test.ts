@@ -12,7 +12,6 @@ describe('测试变量声明的标识符是否被正确分析', () => {
           type: 'variable',
           hoisted: true,
           local: true,
-          static: false
         }
       ] as IdentifierInScope[]
     )
@@ -28,14 +27,12 @@ describe('测试变量声明的标识符是否被正确分析', () => {
           type: 'variable',
           hoisted: false,
           local: true,
-          static: false
         },
         {
           name: 'b',
           type: 'variable',
           hoisted: false,
           local: true,
-          static: false
         }
       ] as IdentifierInScope[]
     )
@@ -51,56 +48,48 @@ describe('测试变量声明的标识符是否被正确分析', () => {
           type: 'variable',
           hoisted: false,
           local: true,
-          static: false
         },
         {
           name: 'c',
           type: 'variable',
           hoisted: false,
           local: true,
-          static: false
         },
         {
           name: 'd',
           type: 'variable',
           hoisted: false,
           local: true,
-          static: false
         },
         {
           name: 'globalVar1',
           type: 'unknown',
           hoisted: false,
           local: false,
-          static: false
         },
         {
           name: 'f',
           type: 'variable',
           hoisted: false,
           local: true,
-          static: false
         },
         {
           name: 'g',
           type: 'variable',
           hoisted: false,
           local: true,
-          static: false
         },
         {
           name: 'rest',
           type: 'variable',
           hoisted: false,
           local: true,
-          static: false
         },
         {
           name: 'obj',
           type: 'unknown',
           hoisted: false,
           local: false,
-          static: false
         }
       ] as IdentifierInScope[]
     )
@@ -116,56 +105,48 @@ describe('测试变量声明的标识符是否被正确分析', () => {
           type: 'variable',
           hoisted: false,
           local: true,
-          static: false
         },
         {
           name: 'c',
           type: 'variable',
           hoisted: false,
           local: true,
-          static: false
         },
         {
           name: 'd',
           type: 'variable',
           hoisted: false,
           local: true,
-          static: false
         },
         {
           name: 'globalVar1',
           type: 'unknown',
           hoisted: false,
           local: false,
-          static: false
         },
         {
           name: 'f',
           type: 'variable',
           hoisted: false,
           local: true,
-          static: false
         },
         {
           name: 'g',
           type: 'variable',
           hoisted: false,
           local: true,
-          static: false
         },
         {
           name: 'rest',
           type: 'variable',
           hoisted: false,
           local: true,
-          static: false
         },
         {
           name: 'obj',
           type: 'unknown',
           hoisted: false,
           local: false,
-          static: false
         }
       ] as IdentifierInScope[]
     )

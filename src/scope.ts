@@ -6,13 +6,12 @@ import type {
   Function as ESTFunction,
   Program,
   CatchClause,
-  Class,
   WithStatement,
+  SwitchStatement,
 } from 'estree'
+import type { ClassDefiniton } from './class-def'
 
-export type IdType = 'variable' | 'function' | 'class' | 'argument' |
-  'import' | 'unknown' |
-  'property' | 'method' | 'get' | 'set' | 'constructor'
+export type IdType = 'variable' | 'function' | 'class' | 'argument' | 'import' | 'unknown'
 
 export type ScopeNode = Program |
   ESTFunction |
@@ -21,25 +20,24 @@ export type ScopeNode = Program |
   ForInStatement |
   ForOfStatement |
   CatchClause |
-  Class |
-  WithStatement
+  WithStatement |
+  SwitchStatement
 
 export interface IdentifierInScope {
-  type: IdType,
   name: string,
+  type: IdType,
   local: boolean,
-  hoisted: boolean,
-  static: boolean
+  hoisted: boolean
 }
 
 export class Scope {
   public readonly node: ScopeNode
-  public readonly parent: Scope | null
-  public readonly children: Scope[]
+  public readonly parent: Scope | ClassDefiniton |  null
+  public readonly children: (Scope | ClassDefiniton)[]
   /** @readonly */
   public identifiers: IdentifierInScope[]
 
-  constructor(parent: Scope | null, node: ScopeNode) {
+  constructor(parent: Scope | ClassDefiniton | null, node: ScopeNode) {
     this.node = node
     this.parent = parent
     if (parent) {
@@ -70,15 +68,16 @@ export class Scope {
     const unknownIds = this.identifiers.filter((id) => id.type === 'unknown')
     let baseScope = this.parent
     while (baseScope) {
-      unknownIds.forEach((id) => {
-        if (id.type === 'unknown') {
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          const target = baseScope!.find(id.name)
-          if (target) {
-            id.type = target.type
+      if (baseScope instanceof Scope) {
+        unknownIds.forEach((id) => {
+          if (id.type === 'unknown')  {
+            const target = (baseScope as Scope).find(id.name)
+            if (target) {
+              id.type = target.type
+            }
           }
-        }
-      })
+        })
+      }
       baseScope = baseScope.parent
     }
 
@@ -98,20 +97,13 @@ export class Scope {
     }
   }
 
-  public where(id: IdentifierInScope) {
+  public where(name: string) {
+    const id = this.find(name)
+    if (!id) return 'unknown'
     return id.local ? 'local' : id.type !== 'unknown' ? 'ancestral' : 'global'
   }
 
   public find(name: string) {
     return this.identifiers.find((id) => id.name === name) || null
-  }
-
-  public findLast(name: string) {
-    for (let i = 0, l = this.identifiers.length; i < l; i++) {
-      if (this.identifiers[i].name === name) {
-        return this.identifiers[i]
-      }
-    }
-    return null
   }
 }

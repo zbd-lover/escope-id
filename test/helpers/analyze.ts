@@ -25,3 +25,7 @@ export function analyzeScript(script: string) {
 export function analyzeModule(script: string) {
   return analyze(getProgram(script, options2))
 }
+
+export function wrapScriptWithVarDeclarations(script: string) {
+  return `const a = 1;${script};const b = 1;`
+}

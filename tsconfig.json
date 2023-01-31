@@ -10,7 +10,6 @@
       "dom",
       "es2017"
     ],
-    "rootDir": "src",
     "allowJs": false,
     "checkJs": false,
     "sourceMap": true,
@@ -20,7 +19,7 @@
     "baseUrl": "./"
   },
   "include": [
-    "src/**/*",
+    "src/**/*", "test/debug.ts", "test/debug.ts",
   ],
   "exclude": [
     "node_modules",

@@ -1,4 +1,4 @@
-import type { IdentifierInScope } from '../../src'
+import type { IdentifierInScope, Scope } from '../../src'
 import { analyzeScript, analyzeModule } from '../helpers/analyze'
 
 describe('测试表达式中的标识符是否被正确分析', () => {
@@ -12,28 +12,24 @@ describe('测试表达式中的标识符是否被正确分析', () => {
           type: 'variable',
           hoisted: false,
           local: true,
-          static: false
         },
         {
           name: 'a',
           type: 'unknown',
           hoisted: false,
           local: false,
-          static: false
         },
         {
           name: 'b',
           type: 'unknown',
           hoisted: false,
           local: false,
-          static: false
         },
         {
           name: 'c',
           type: 'unknown',
           hoisted: false,
           local: false,
-          static: false
         },
       ] as IdentifierInScope[]
     )
@@ -49,7 +45,6 @@ describe('测试表达式中的标识符是否被正确分析', () => {
           type: 'variable',
           hoisted: false,
           local: true,
-          static: false
         }
       ] as IdentifierInScope[]
     )
@@ -65,21 +60,18 @@ describe('测试表达式中的标识符是否被正确分析', () => {
           type: 'variable',
           hoisted: false,
           local: true,
-          static: false
         },
         {
           name: 'a',
           type: 'unknown',
           hoisted: false,
           local: false,
-          static: false
         },
         {
           name: 'b',
           type: 'unknown',
           hoisted: false,
           local: false,
-          static: false
         },
       ] as IdentifierInScope[]
     )
@@ -95,14 +87,12 @@ describe('测试表达式中的标识符是否被正确分析', () => {
           type: 'variable',
           hoisted: false,
           local: true,
-          static: false
         },
         {
           name: 'a',
           type: 'unknown',
           hoisted: false,
           local: false,
-          static: false
         }
       ] as IdentifierInScope[]
     )
@@ -111,7 +101,7 @@ describe('测试表达式中的标识符是否被正确分析', () => {
   test('await表达式', () => {
     const script = 'async function fn1() { await promise0; }'
     const topScope = analyzeScript(script)
-    const targetScope = topScope.children[0]
+    const targetScope = topScope.children[0] as Scope
     expect(targetScope.identifiers).toEqual(
       [
         {
@@ -119,7 +109,6 @@ describe('测试表达式中的标识符是否被正确分析', () => {
           type: 'unknown',
           hoisted: false,
           local: false,
-          static: false
         },
       ] as IdentifierInScope[]
     )
@@ -135,21 +124,18 @@ describe('测试表达式中的标识符是否被正确分析', () => {
           type: 'variable',
           hoisted: false,
           local: true,
-          static: false
         },
         {
           name: 'b',
           type: 'variable',
           hoisted: false,
           local: true,
-          static: false
         },
         {
           name: 'c',
           type: 'unknown',
           hoisted: false,
           local: false,
-          static: false
         },
       ] as IdentifierInScope[]
     )
@@ -165,28 +151,24 @@ describe('测试表达式中的标识符是否被正确分析', () => {
           type: 'function',
           hoisted: true,
           local: true,
-          static: false
         },
         {
           name: 'a',
           type: 'unknown',
           hoisted: false,
           local: false,
-          static: false
         },
         {
           name: 'b',
           type: 'unknown',
           hoisted: false,
           local: false,
-          static: false
         },
         {
           name: 'c',
           type: 'unknown',
           hoisted: false,
           local: false,
-          static: false
         },
       ] as IdentifierInScope[]
     )
@@ -202,28 +184,24 @@ describe('测试表达式中的标识符是否被正确分析', () => {
           type: 'function',
           hoisted: true,
           local: true,
-          static: false
         },
         {
           name: 'a',
           type: 'unknown',
           hoisted: false,
           local: false,
-          static: false
         },
         {
           name: 'b',
           type: 'unknown',
           hoisted: false,
           local: false,
-          static: false
         },
         {
           name: 'c',
           type: 'unknown',
           hoisted: false,
           local: false,
-          static: false
         },
       ] as IdentifierInScope[]
     )
@@ -239,14 +217,12 @@ describe('测试表达式中的标识符是否被正确分析', () => {
           type: 'variable',
           hoisted: false,
           local: true,
-          static: false
         },
         {
           name: 'B',
           type: 'unknown',
           hoisted: false,
           local: false,
-          static: false
         },
       ] as IdentifierInScope[]
     )
@@ -262,28 +238,24 @@ describe('测试表达式中的标识符是否被正确分析', () => {
           type: 'variable',
           hoisted: false,
           local: true,
-          static: false
         },
         {
           name: 'b',
           type: 'variable',
           hoisted: false,
           local: true,
-          static: false
         },
         {
           name: 'c',
           type: 'unknown',
           hoisted: false,
           local: false,
-          static: false
         },
         {
           name: 'd',
           type: 'unknown',
           hoisted: false,
           local: false,
-          static: false
         },
       ] as IdentifierInScope[]
     )
@@ -299,7 +271,6 @@ describe('测试表达式中的标识符是否被正确分析', () => {
           type: 'variable',
           hoisted: false,
           local: true,
-          static: false
         }
       ] as IdentifierInScope[]
     )
@@ -314,7 +285,6 @@ describe('测试表达式中的标识符是否被正确分析', () => {
           name: 'a',
           type: 'unknown',
           hoisted: false,
-          static: false,
           local: false
         }
       ] as IdentifierInScope[]
@@ -342,21 +312,18 @@ describe('测试表达式中的标识符是否被正确分析', () => {
           name: 'a',
           type: 'variable',
           hoisted: false,
-          static: false,
           local: true
         },
         {
           name: 'b',
           type: 'unknown',
           hoisted: false,
-          static: false,
           local: false
         },
         {
           name: 'c',
           type: 'unknown',
           hoisted: false,
-          static: false,
           local: false
         }
       ] as IdentifierInScope[]
@@ -372,7 +339,6 @@ describe('测试表达式中的标识符是否被正确分析', () => {
           name: 'obj',
           type: 'variable',
           hoisted: false,
-          static: false,
           local: true
         }
       ] as IdentifierInScope[]
@@ -388,14 +354,12 @@ describe('测试表达式中的标识符是否被正确分析', () => {
           name: 'obj',
           type: 'variable',
           hoisted: false,
-          static: false,
           local: true
         },
         {
           name: 'name',
           type: 'unknown',
           hoisted: false,
-          static: false,
           local: false
         }
       ] as IdentifierInScope[]
@@ -411,7 +375,6 @@ describe('测试表达式中的标识符是否被正确分析', () => {
           name: 'obj',
           type: 'variable',
           hoisted: false,
-          static: false,
           local: true
         }
       ] as IdentifierInScope[]
@@ -427,14 +390,12 @@ describe('测试表达式中的标识符是否被正确分析', () => {
           name: 'obj',
           type: 'variable',
           hoisted: false,
-          static: false,
           local: true
         },
         {
           name: 'name',
           type: 'unknown',
           hoisted: false,
-          static: false,
           local: false
         }
       ] as IdentifierInScope[]
@@ -456,35 +417,30 @@ describe('测试表达式中的标识符是否被正确分析', () => {
           name: 'a',
           type: 'variable',
           hoisted: false,
-          static: false,
           local: true
         },
         {
           name: 'A',
           type: 'unknown',
           hoisted: false,
-          static: false,
           local: false
         },
         {
           name: 'b',
           type: 'unknown',
           hoisted: false,
-          static: false,
           local: false
         },
         {
           name: 'c',
           type: 'unknown',
           hoisted: false,
-          static: false,
           local: false
         },
         {
           name: 'd',
           type: 'unknown',
           hoisted: false,
-          static: false,
           local: false
         },
       ] as IdentifierInScope[]
@@ -497,6 +453,8 @@ describe('测试表达式中的标识符是否被正确分析', () => {
       const obj2 = {
         foo: 1,
         [bar]: 2,
+        method1() {},
+        test: function() {},
         get value() {},
         set value2(v) {} 
       }
@@ -508,21 +466,18 @@ describe('测试表达式中的标识符是否被正确分析', () => {
           name: 'obj1',
           type: 'variable',
           hoisted: false,
-          static: false,
           local: true
         },
         {
           name: 'obj2',
           type: 'variable',
           hoisted: false,
-          static: false,
           local: true
         },
         {
           name: 'bar',
           type: 'unknown',
           hoisted: false,
-          static: false,
           local: false
         },
       ] as IdentifierInScope[]
@@ -538,21 +493,18 @@ describe('测试表达式中的标识符是否被正确分析', () => {
           name: 'a',
           type: 'variable',
           hoisted: false,
-          static: false,
           local: true
         },
         {
           name: 'b',
           type: 'variable',
           hoisted: false,
-          static: false,
           local: true
         },
         {
           name: 'c',
           type: 'unknown',
           hoisted: false,
-          static: false,
           local: false
         },
       ] as IdentifierInScope[]
@@ -568,14 +520,12 @@ describe('测试表达式中的标识符是否被正确分析', () => {
           name: 'a',
           type: 'variable',
           hoisted: false,
-          static: false,
           local: true
         },
         {
           name: 'b',
           type: 'unknown',
           hoisted: false,
-          static: false,
           local: false
         }
       ] as IdentifierInScope[]
@@ -597,7 +547,6 @@ describe('测试表达式中的标识符是否被正确分析', () => {
           name: 'obj',
           type: 'unknown',
           hoisted: false,
-          static: false,
           local: false
         }
       ] as IdentifierInScope[]
@@ -613,7 +562,6 @@ describe('测试表达式中的标识符是否被正确分析', () => {
           name: 'a',
           type: 'unknown',
           hoisted: false,
-          static: false,
           local: false
         }
       ] as IdentifierInScope[]
@@ -623,14 +571,13 @@ describe('测试表达式中的标识符是否被正确分析', () => {
   test('yield表达式', () => {
     const script = 'function* gen() { yield a }'
     const topScope = analyzeScript(script)
-    const targetScope = topScope.children[0]
+    const targetScope = topScope.children[0] as Scope
     expect(targetScope.identifiers).toEqual(
       [
         {
           name: 'a',
           type: 'unknown',
           hoisted: false,
-          static: false,
           local: false
         }
       ]
