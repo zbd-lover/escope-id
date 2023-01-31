@@ -18,8 +18,8 @@
     "clean": "rimraf lib dist es",
     "coverage": "jest --coverage",
     "tsd": "tsc --declaration true --emitDeclarationOnly true --declarationDir ./types",
-    "lint": "eslint --ext ts src test",
-    "fix:lint": "eslint  --fix ./src ./test",
+    "lint": "eslint --ext ts src",
+    "fix:lint": "eslint  --fix ./src",
     "prepublish": "npm run clean && npm run tsd && npm run test && npm run lint && npm run fix:lint",
     "build": "rollup -c"
   },

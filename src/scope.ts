@@ -46,7 +46,7 @@ class Area<N, P extends Area<any, any, any>, C extends Area<any, any, any>> {
   public readonly parent: P | null
   public readonly children: C[]
 
-  constructor(parent: P | null, node: N) {
+  constructor (parent: P | null, node: N) {
     this.node = node
     this.parent = parent
     if (parent) {
@@ -56,13 +56,13 @@ class Area<N, P extends Area<any, any, any>, C extends Area<any, any, any>> {
   }
 
   /** @internal */
-  public finalize() {
+  public finalize () {
     for (const childScope of this.children) {
       childScope.finalize()
     }
   }
 
-  public acquire(node: AcquiredNode): Area<N, P, C> | null {
+  public acquire (node: AcquiredNode): Area<N, P, C> | null {
     if (this.node === node) return this
     for (const child of this.children) {
       const ret = child.acquire(node)
@@ -78,13 +78,13 @@ export class Scope extends Area<ScopeNode, Scope | ClassDefiniton, Scope | Class
   /** @readonly */
   public identifiers: IdentifierInScope[]
 
-  constructor(parent: (Scope | ClassDefiniton | null), node: ScopeNode) {
+  constructor (parent: (Scope | ClassDefiniton | null), node: ScopeNode) {
     super(parent, node)
     this.identifiers = []
   }
 
   /** @internal */
-  public finalize() {
+  public finalize () {
     // 移除引用当前作用域变量但类型暂为unknown的标识符
     // const a = 10; console.log(a) ;
     const localIds = this.identifiers.filter((id) => id.local)
@@ -161,13 +161,13 @@ export class Scope extends Area<ScopeNode, Scope | ClassDefiniton, Scope | Class
     super.finalize()
   }
 
-  public where(name: string) {
+  public where (name: string) {
     const id = this.find(name)
     if (!id) return 'unknown'
     return id.local ? 'local' : id.type !== 'unknown' ? 'ancestral' : 'global'
   }
 
-  public find(name: string) {
+  public find (name: string) {
     return this.identifiers.find((id) => id.name === name) || null
   }
 }
@@ -175,18 +175,18 @@ export class Scope extends Area<ScopeNode, Scope | ClassDefiniton, Scope | Class
 export class ClassDefiniton extends Area<Class, Scope, Scope | ClassDefiniton> {
   public definitions: ClassMetaDefiniton[]
 
-  constructor(parent: Scope | null, node: Class) {
+  constructor (parent: Scope | null, node: Class) {
     super(parent, node)
     this.definitions = []
   }
 
-  public finalize() {
+  public finalize () {
     for (const scope of this.children) {
       scope.finalize()
     }
   }
 
-  public find(name: string, type?: ClassMetaDefinitonType, _static?: boolean) {
+  public find (name: string, type?: ClassMetaDefinitonType, _static?: boolean) {
     _static = !!_static
     return this.definitions.find((def) => {
       return def.name === name &&

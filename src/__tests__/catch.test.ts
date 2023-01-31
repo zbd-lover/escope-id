@@ -16,7 +16,7 @@ describe('catch语句', () => {
       type: 'variable',
     }
 
-    function test1() {
+    function test1 () {
       const topScope = analyzeScript(wrapScriptWithVarDeclarations('try {} catch(e) { const a = 10 }'))
       const catchScope = topScope.children[1] as Scope
       expect(topScope.children.length).toBe(2)
@@ -37,7 +37,7 @@ describe('catch语句', () => {
       ] as IdentifierInScope[])
     }
 
-    function test2() {
+    function test2 () {
       const topScope = analyzeScript(wrapScriptWithVarDeclarations('try {} catch({ a, b = c, d: { e, f } }) { const g = 1; }'))
       const catchScope = topScope.children[1] as Scope
       expect(topScope.children.length).toBe(2)

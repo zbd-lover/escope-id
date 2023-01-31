@@ -14,18 +14,18 @@ const options2: Options = {
   allowImportExportEverywhere: false
 }
 
-export function getProgram(script: string, options?: Options) {
+export function getProgram (script: string, options?: Options) {
   return parseAST(script, options || options1) as unknown as Program
 }
 
-export function analyzeScript(script: string) {
+export function analyzeScript (script: string) {
   return analyze(getProgram(script, options1))
 }
 
-export function analyzeModule(script: string) {
+export function analyzeModule (script: string) {
   return analyze(getProgram(script, options2))
 }
 
-export function wrapScriptWithVarDeclarations(script: string) {
+export function wrapScriptWithVarDeclarations (script: string) {
   return `const a = 1;${script};const b = 1;`
 }

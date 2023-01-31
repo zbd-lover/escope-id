@@ -3,7 +3,7 @@ import * as ESTree from 'estree'
 import { traverse, VisitorKeys } from 'estraverse'
 import { Scope, ClassDefiniton, type IdentifierInScope, ScopeNode, IdType, ClassMetaDefiniton, ClassMetaDefinitonType } from './scope'
 
-function isFunctionNode(node: ESTree.Node): node is ESTree.Function {
+function isFunctionNode (node: ESTree.Node): node is ESTree.Function {
   return node.type === 'FunctionDeclaration' || node.type === 'FunctionExpression' || node.type === 'ArrowFunctionExpression'
 }
 
@@ -20,16 +20,16 @@ const keys: Partial<VisitorKeys> = {
   TemplateLiteral: ['expressions']
 }
 
-export default function analyze(node: ScopeNode) {
+export default function analyze (node: ScopeNode) {
   /** 是否在解构上下文中 */
   let inPatternCtx = false
   let currentVarKind: 'let' | 'var' | 'const' | null = null
 
   let currentType: IdType | ClassMetaDefinitonType = 'unknown'
-  function setCurrentType(type: IdType | ClassMetaDefinitonType) {
+  function setCurrentType (type: IdType | ClassMetaDefinitonType) {
     currentType = type
   }
-  function consumeCurrentType() {
+  function consumeCurrentType () {
     const ret = currentType
     currentType = 'unknown'
     return ret
@@ -37,7 +37,7 @@ export default function analyze(node: ScopeNode) {
 
   let currentArea: Scope | ClassDefiniton = new Scope(null, node)
   const rootArea = currentArea
-  function pushElToCurrentArea(el: IdentifierInScope | ClassMetaDefiniton) {
+  function pushElToCurrentArea (el: IdentifierInScope | ClassMetaDefiniton) {
     if (currentArea instanceof Scope) {
       currentArea.identifiers.push(el as IdentifierInScope)
     } else {
@@ -48,7 +48,7 @@ export default function analyze(node: ScopeNode) {
   traverse(node, {
     keys,
 
-    enter(node, parent) {
+    enter (node, parent) {
       // node is Program
       if (parent === null) return
 
@@ -177,7 +177,7 @@ export default function analyze(node: ScopeNode) {
       }
     },
 
-    leave(node, parent) {
+    leave (node, parent) {
       if (parent === null) return
       if (
         node.type === 'BlockStatement' ||
