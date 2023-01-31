@@ -183,7 +183,7 @@ export default function analyze(node: ScopeNode) {
         (node.type === 'ArrowFunctionExpression' && node.expression)
       ) {
         inPatternCtx = false
-        currentArea = currentArea?.parent || null
+        currentArea = currentArea!.parent
       }
 
       if (parent?.type === 'SwitchStatement' && parent.discriminant === node) {
