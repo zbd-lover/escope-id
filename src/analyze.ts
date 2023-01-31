@@ -50,6 +50,9 @@ export default function analyze(node: ScopeNode) {
     },
 
     enter(node, parent) {
+      // node is Program
+      if (parent === null) return
+
       if (node.type === 'VariableDeclaration') {
         currentVarKind = node.kind
       }
@@ -71,7 +74,7 @@ export default function analyze(node: ScopeNode) {
         node.type === 'CatchClause' ||
         node.type === 'FunctionExpression' ||
         node.type === 'ArrowFunctionExpression' ||
-        (node.type === 'BlockStatement' && parent && (
+        (node.type === 'BlockStatement' && (
           parent.type === 'Program' ||
           parent.type === 'BlockStatement' ||
           parent.type === 'IfStatement' ||
@@ -84,7 +87,7 @@ export default function analyze(node: ScopeNode) {
         currentArea = new Scope(currentArea, node)
       } else if (node.type === 'ClassBody') {
         currentArea = new ClassDefiniton(currentArea as Scope, parent as ESTree.Class)
-      } else if (node.type == 'BlockStatement' && parent?.type === 'WithStatement') {
+      } else if (node.type == 'BlockStatement' && parent.type === 'WithStatement') {
         currentArea = new Scope(currentArea, parent)
         this.skip()
         return
@@ -176,6 +179,7 @@ export default function analyze(node: ScopeNode) {
     },
 
     leave(node, parent) {
+      if (parent === null) return
       if (
         node.type === 'BlockStatement' ||
         node.type === 'SwitchStatement' ||
@@ -186,7 +190,7 @@ export default function analyze(node: ScopeNode) {
         currentArea = currentArea!.parent
       }
 
-      if (parent?.type === 'SwitchStatement' && parent.discriminant === node) {
+      if (parent.type === 'SwitchStatement' && parent.discriminant === node) {
         inPatternCtx = false
         currentArea = new Scope(currentArea, parent)
       }
@@ -194,13 +198,11 @@ export default function analyze(node: ScopeNode) {
       if (node.type === 'VariableDeclaration') {
         currentVarKind = null
       } else if (node.type === 'Identifier') {
-        if (parent) {
-          if (parent.type === 'FunctionDeclaration' && parent.id === node) {
-            inPatternCtx = true
-            currentArea = new Scope(currentArea, parent)
-          } else if (parent.type === 'VariableDeclarator' && parent.id === node) {
-            inPatternCtx = false
-          }
+        if (parent.type === 'FunctionDeclaration' && parent.id === node) {
+          inPatternCtx = true
+          currentArea = new Scope(currentArea, parent)
+        } else if (parent.type === 'VariableDeclarator' && parent.id === node) {
+          inPatternCtx = false
         }
       }
     }
