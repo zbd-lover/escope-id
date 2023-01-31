@@ -1,5 +1,5 @@
 import type { IdentifierInScope } from '../../src'
-import { analyzeScript } from '../helpers/analyze'
+import { analyzeScript } from './helpers/analyze'
 
 describe('测试变量声明的标识符是否被正确分析', () => {
   test('使用var声明的变量', () => {

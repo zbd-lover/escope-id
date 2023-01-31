@@ -1,5 +1,5 @@
 import type { IdentifierInScope } from '../../src'
-import { analyzeModule } from '../helpers/analyze'
+import { analyzeModule } from './helpers/analyze'
 
 test('应正确分析导入的标识符', () => {
   const script = `

@@ -1,8 +1,7 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import * as ESTree from 'estree'
 import { traverse, VisitorKeys } from 'estraverse'
-import { Scope, type IdentifierInScope, ScopeNode, IdType } from './scope'
-import { ClassDefiniton, type ClassMetaDefiniton, ClassMetaDefinitonType } from './class-def'
+import { Scope, ClassDefiniton, type IdentifierInScope, ScopeNode, IdType, ClassMetaDefiniton, ClassMetaDefinitonType } from './scope'
 
 function isFunctionNode(node: ESTree.Node): node is ESTree.Function {
   return node.type === 'FunctionDeclaration' || node.type === 'FunctionExpression' || node.type === 'ArrowFunctionExpression'

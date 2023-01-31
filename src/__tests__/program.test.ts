@@ -1,5 +1,5 @@
 import { ClassDefiniton, Scope } from '../../src'
-import { analyzeModule, analyzeScript } from '../helpers/analyze'
+import { analyzeModule, analyzeScript } from './helpers/analyze'
 
 describe('Js全局运行环境', () => {
   describe('允许嵌套其它语句或表达式生成的作用域', () => {

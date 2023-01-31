@@ -1,5 +1,5 @@
 import { Scope, type IdentifierInScope } from '../../src'
-import { analyzeScript } from '../helpers/analyze'
+import { analyzeScript } from './helpers/analyze'
 
 describe('with语句', () => {
   test('生成的作用域应正确闭合，且不影响上下文', () => {

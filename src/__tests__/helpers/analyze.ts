@@ -1,6 +1,6 @@
 import { Program } from 'estree'
 import { parse as parseAST, type Options } from 'acorn'
-import { analyze } from '../../src'
+import { analyze } from '../../../src'
 
 const options1: Options = {
   ecmaVersion: 'latest',

@@ -1,4 +1,5 @@
 import type {
+  Class,
   ForInStatement,
   ForOfStatement,
   ForStatement,
@@ -9,7 +10,8 @@ import type {
   WithStatement,
   SwitchStatement,
 } from 'estree'
-import type { ClassDefiniton } from './class-def'
+
+export type AcquiredNode = ScopeNode | Class
 
 export type IdType = 'variable' | 'function' | 'class' | 'argument' | 'import' | 'unknown'
 
@@ -30,20 +32,54 @@ export interface IdentifierInScope {
   hoisted: boolean
 }
 
-export class Scope {
-  public readonly node: ScopeNode
-  public readonly parent: Scope | ClassDefiniton |  null
-  public readonly children: (Scope | ClassDefiniton)[]
-  /** @readonly */
-  public identifiers: IdentifierInScope[]
+export type ClassMetaDefinitonType = 'property' | 'method' | 'get' | 'set' | 'constructor'
 
-  constructor(parent: Scope | ClassDefiniton | null, node: ScopeNode) {
+export interface ClassMetaDefiniton {
+  name: string,
+  static: boolean,
+  type: ClassMetaDefinitonType
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+class Area<N, P extends Area<any, any, any>, C extends Area<any, any, any>> {
+  public readonly node: N
+  public readonly parent: P | null
+  public readonly children: C[]
+
+  constructor(parent: P | null, node: N) {
     this.node = node
     this.parent = parent
     if (parent) {
       parent.children.push(this)
     }
     this.children = []
+  }
+
+  /** @internal */
+  public finalize() {
+    for (const childScope of this.children) {
+      childScope.finalize()
+    }
+  }
+
+  public acquire(node: AcquiredNode): Area<N, P, C> | null {
+    if (this.node === node) return this
+    for (const child of this.children) {
+      const ret = child.acquire(node)
+      if (ret) {
+        return ret
+      }
+    }
+    return null
+  }
+}
+
+export class Scope extends Area<ScopeNode, Scope | ClassDefiniton, Scope | ClassDefiniton> {
+  /** @readonly */
+  public identifiers: IdentifierInScope[]
+
+  constructor(parent: (Scope | ClassDefiniton | null), node: ScopeNode) {
+    super(parent, node)
     this.identifiers = []
   }
 
@@ -59,7 +95,6 @@ export class Scope {
         deletedIndex.push(i)
       }
     }
-    // console.log(localIds, deletedIndex)
     this.identifiers = this.identifiers.filter((_, index) => !deletedIndex.includes(index))
 
     // 计算所有暂时为unknown类型的变量的真正类型
@@ -70,7 +105,7 @@ export class Scope {
     while (baseScope) {
       if (baseScope instanceof Scope) {
         unknownIds.forEach((id) => {
-          if (id.type === 'unknown')  {
+          if (id.type === 'unknown') {
             const target = (baseScope as Scope).find(id.name)
             if (target) {
               id.type = target.type
@@ -81,20 +116,49 @@ export class Scope {
       baseScope = baseScope.parent
     }
 
-    // 边界情况1：
-    // const a = function A() { console.log(A) }
-    // 函数名为A的函数表达式在全局作用域中并不存在
-    // 但它的类型我们可以确定为：'function'
+    // 边界情况1：const a = function A() { console.log(A) }
+    // 边界情况2：const a = class A { method1() { console.log(A) } }
+    // 函数A和类A没有在某个作用域被定义（在该作用域中无法访问到），但可在其内部被访问到
+    // 无法在相应的作用域中访问到，意味对应标识符的类型为unknown
+    // 但实际上我们可以确定这些标识符的类型为'function'或'class'
+    unknownIds.forEach((id) => {
+      // eslint-disable-next-line @typescript-eslint/no-this-alias
+      let baseScope: Scope | ClassDefiniton | null = this
+      while (baseScope) {
+        const node: AcquiredNode = baseScope.node
+        if (node.type === 'FunctionExpression') {
+          const parentScope = baseScope.parent
+          /**
+           * 避免误判。类的成员方法或者set和get也会形成作用域
+           * 且相应node的类型为FunctionExpression
+           * 这种情况下，和边界情况1很相似，但并不一样，应进行忽略
+           * const a = class A {
+           *  method() {
+           *    method(); // 它会在当前以及祖先作用域中寻找被定义的method变量，而不是相当于'this.method()'
+           *  }
+           * }
+           */
+          if (!(parentScope &&
+            parentScope instanceof ClassDefiniton &&
+            parentScope.find(id.name))
+          ) {
+            if (node.id?.name === id.name) {
+              id.type = 'function'
+              break
+            }
+          }
+        } else if (node.type === 'ClassExpression') {
+          if (node.id?.name === id.name) {
+            id.type = 'class'
+            break
+          }
+        }
 
-    // 边界情况2 （与1很像）
+        baseScope = baseScope.parent
+      }
+    })
 
-    // if (this.node.type === 'FunctionExpression') {
-
-    // }
-
-    for (const childScope of this.children) {
-      childScope.finalize()
-    }
+    super.finalize()
   }
 
   public where(name: string) {
@@ -105,5 +169,29 @@ export class Scope {
 
   public find(name: string) {
     return this.identifiers.find((id) => id.name === name) || null
+  }
+}
+
+export class ClassDefiniton extends Area<Class, Scope, Scope | ClassDefiniton> {
+  public definitions: ClassMetaDefiniton[]
+
+  constructor(parent: Scope | null, node: Class) {
+    super(parent, node)
+    this.definitions = []
+  }
+
+  public finalize() {
+    for (const scope of this.children) {
+      scope.finalize()
+    }
+  }
+
+  public find(name: string, type?: ClassMetaDefinitonType, _static?: boolean) {
+    _static = !!_static
+    return this.definitions.find((def) => {
+      return def.name === name &&
+        (type ? def.type === type : true) &&
+        (def.static === _static)
+    }) || null
   }
 }

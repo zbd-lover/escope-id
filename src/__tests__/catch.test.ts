@@ -1,5 +1,5 @@
 import { ClassDefiniton, Scope, type IdentifierInScope } from '../../src'
-import { analyzeScript, wrapScriptWithVarDeclarations } from '../helpers/analyze'
+import { analyzeScript, wrapScriptWithVarDeclarations } from './helpers/analyze'
 
 describe('catch语句', () => {
   test('生成的作用域应正确闭合，且不影响上下文', () => {

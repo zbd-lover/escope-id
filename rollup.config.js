@@ -16,7 +16,7 @@ export default defineConfig([
   // CommonJS
   {
     input: './src/index.ts',
-    output: { file: 'lib/estree-identifier-parser.js', format: 'commonjs', indent: false },
+    output: { file: 'lib/escope-id.js', format: 'commonjs', indent: false },
     external,
     plugins: [
       typescript({
@@ -31,7 +31,7 @@ export default defineConfig([
   // ES
   {
     input: './src/index.ts',
-    output: { file: 'es/estree-identifier-parser.js', format: 'es', indent: false },
+    output: { file: 'es/escope-id.js', format: 'es', indent: false },
     external,
     plugins: [
       typescript({
@@ -47,7 +47,7 @@ export default defineConfig([
   // ES for Browsers
   {
     input: './src/index.ts',
-    output: { file: 'es/estree-identifier-parser.mjs', format: 'es', indent: false },
+    output: { file: 'es/escope-id.mjs', format: 'es', indent: false },
     external,
     plugins: [
       typescript({
@@ -78,9 +78,9 @@ export default defineConfig([
   {
     input: './src/index.ts',
     output: {
-      file: 'dist/estree-identifier-parser.js',
+      file: 'dist/escope-id.js',
       format: 'umd',
-      name: 'EstIdParser',
+      name: 'EscopeId',
       indent: false,
       exports: 'named'
     },
@@ -105,9 +105,9 @@ export default defineConfig([
   {
     input: './src/index.ts',
     output: {
-      file: 'dist/estree-identifier-parser.min.js',
+      file: 'dist/escope-id.min.js',
       format: 'umd',
-      name: 'EstIdParser',
+      name: 'EscopeId',
       indent: false,
       exports: 'named'
     },

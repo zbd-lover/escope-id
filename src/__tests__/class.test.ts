@@ -1,5 +1,5 @@
 import { Scope, ClassDefiniton, type IdentifierInScope, ClassMetaDefiniton } from '../../src'
-import { analyzeModule, analyzeScript, wrapScriptWithVarDeclarations } from '../helpers/analyze'
+import { analyzeModule, analyzeScript, wrapScriptWithVarDeclarations } from './helpers/analyze'
 
 describe('类', () => {
   const baseClassScript = (named: boolean) => `class ${named ? 'A' : ''} extends B {

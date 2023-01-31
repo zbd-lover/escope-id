@@ -2,9 +2,9 @@
   "name": "escope-id",
   "version": "1.0.0",
   "description": "Analyze the definition of identifier based on estree",
-  "main": "lib/estree-identifier-parser.js",
-  "unpkg": "dist/estree-identifier-parser.js",
-  "module": "es/estree-identifier-parser.js",
+  "main": "lib/escope-id.js",
+  "unpkg": "dist/escope-id.js",
+  "module": "es/escope-id.js",
   "types": "types/index.d.ts",
   "files": [
     "dist",
@@ -31,7 +31,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git@github.com:zbd-lover/estree-identifier-parser.git"
+    "url": "git@github.com:zbd-lover/escope-id.git"
   },
   "author": "BaoDi Zheng",
   "license": "MIT",

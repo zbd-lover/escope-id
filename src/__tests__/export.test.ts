@@ -1,5 +1,5 @@
 import type { IdentifierInScope } from '../../src'
-import { analyzeModule } from '../helpers/analyze'
+import { analyzeModule } from './helpers/analyze'
 
 describe('测试导出相关', () => {
   test('应不分析导出全部和命名导出中的标识符', () => {

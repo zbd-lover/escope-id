@@ -1,5 +1,5 @@
 import type { IdentifierInScope, Scope } from '../../src'
-import { analyzeScript, analyzeModule } from '../helpers/analyze'
+import { analyzeScript, analyzeModule } from './helpers/analyze'
 
 describe('测试表达式中的标识符是否被正确分析', () => {
   test('数组表达式', () => {
