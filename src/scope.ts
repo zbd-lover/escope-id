@@ -7,6 +7,7 @@ import type {
   Program,
   CatchClause,
   Class,
+  WithStatement,
 } from 'estree'
 
 export type IdType = 'variable' | 'function' | 'class' | 'argument' |
@@ -20,7 +21,8 @@ export type ScopeNode = Program |
   ForInStatement |
   ForOfStatement |
   CatchClause |
-  Class
+  Class |
+  WithStatement
 
 export interface IdentifierInScope {
   type: IdType,

@@ -42,12 +42,15 @@ export default function analyze(node: ScopeNode) {
       [Syntax['ExportNamedDeclaration']]: ['declaration'],
       [Syntax['ExportAllDeclaration']]: [],
       [Syntax['TemplateLiteral']]: ['expressions'],
-      [Syntax['WithStatement']]: ['object']
     },
 
     enter(node, parent) {
       if (node.type === 'VariableDeclaration') {
         currentVarKind = node.kind
+      }
+
+      if (node.type === 'BlockStatement') {
+        inPatternCtx = false
       }
 
       // 作用域更新
@@ -71,10 +74,10 @@ export default function analyze(node: ScopeNode) {
         currentScope = new Scope(currentScope, node)
       } else if (node.type === 'ClassBody') {
         currentScope = new Scope(currentScope, parent as ESTree.Class)
-      }
-
-      if (node.type === 'BlockStatement') {
-        inPatternCtx = false
+      } else if (node.type == 'BlockStatement' && parent?.type === 'WithStatement') {
+        currentScope = new Scope(currentScope, parent)
+        this.skip()
+        return
       }
 
       if (
