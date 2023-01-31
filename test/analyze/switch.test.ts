@@ -64,8 +64,15 @@ describe('switch语句', () => {
       expect(blockScope.children[0].node.type).toBe('FunctionDeclaration')
     })
 
-    test('嵌套函数表达式', () => {
+    test('嵌套具名函数表达式', () => {
       const topScope = analyzeScript('switch(a) { case 1: const fn = function fn(){} }')
+      const blockScope = topScope.children[0] as Scope
+      expect(blockScope.children.length).toBe(1)
+      expect(blockScope.children[0].node.type).toBe('FunctionExpression')
+    })
+
+    test('嵌套匿名函数表达式', () => {
+      const topScope = analyzeScript('switch(a) { case 1: const fn = function (){} }')
       const blockScope = topScope.children[0] as Scope
       expect(blockScope.children.length).toBe(1)
       expect(blockScope.children[0].node.type).toBe('FunctionExpression')
@@ -77,7 +84,7 @@ describe('switch语句', () => {
       expect(blockScope.children.length).toBe(1)
       expect(blockScope.children[0].node.type).toBe('ArrowFunctionExpression')
     })
-    
+
     test('嵌套箭头函数表达式（直接返回表达式）', () => {
       const topScope = analyzeScript('switch(a) { case 1: const fn = () => null }')
       const blockScope = topScope.children[0] as Scope
@@ -100,8 +107,16 @@ describe('switch语句', () => {
       expect(classDef instanceof ClassDefiniton).toBe(true)
     })
 
-    test('嵌套类表达式', () => {
+    test('嵌套具名类表达式', () => {
       const topScope = analyzeScript('switch(a) { case 1: const A = class A {} }')
+      const blockScope = topScope.children[0] as Scope
+      const classDef = blockScope.children[0] as ClassDefiniton
+      expect(blockScope.children.length).toBe(1)
+      expect(classDef instanceof ClassDefiniton).toBe(true)
+    })
+
+    test('嵌套匿名类表达式', () => {
+      const topScope = analyzeScript('switch(a) { case 1: const A = class {} }')
       const blockScope = topScope.children[0] as Scope
       const classDef = blockScope.children[0] as ClassDefiniton
       expect(blockScope.children.length).toBe(1)

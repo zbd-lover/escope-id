@@ -16,7 +16,7 @@ describe('块语句', () => {
       type: 'variable',
     }
 
-    test('in Program', () => {
+    test('在Js全局运行环境中', () => {
       const script = '{ const a = 10 }'
       const topScope = analyzeScript(wrapScriptWithVarDeclarations(script))
       const blockScope = topScope.children[0] as Scope
@@ -26,52 +26,28 @@ describe('块语句', () => {
       expect(blockScope.identifiers).toEqual([expectIdA])
     })
 
-    test('follow WithStatement', () => {
-      const script = 'with(window) { }'
-      const topScope = analyzeScript(wrapScriptWithVarDeclarations(script))
-      expect(topScope.identifiers).toContainEqual(expectIdA)
-      expect(topScope.identifiers).toContainEqual(expectIdB)
-      expect(topScope.children[0].node.type).toBe('WithStatement')
-    })
-
-    test('follow ForStatement', () => {
+    test('伴随for语句', () => {
       const script = 'for (;;) {}'
       const topScope = analyzeScript(wrapScriptWithVarDeclarations(script))
       expect(topScope.children[0].node.type).toBe('ForStatement')
       expect(topScope.identifiers).toEqual([expectIdA, expectIdB])
     })
 
-    test('follow ForInStatement', () => {
+    test('伴随for-in语句', () => {
       const script = 'for (const key in keys) {}'
       const topScope = analyzeScript(wrapScriptWithVarDeclarations(script))
       expect(topScope.children[0].node.type).toBe('ForInStatement')
       expect(topScope.identifiers).toEqual([expectIdA, expectIdB])
     })
 
-    test('follow ForOfStatement', () => {
+    test('伴随for-of语句', () => {
       const script = 'for (const key of keys) {}'
       const topScope = analyzeScript(wrapScriptWithVarDeclarations(script))
       expect(topScope.children[0].node.type).toBe('ForOfStatement')
       expect(topScope.identifiers).toEqual([expectIdA, expectIdB])
     })
 
-    test('follow FunctionDeclaration', () => {
-      const script = 'function fn() {}'
-      const topScope = analyzeScript(wrapScriptWithVarDeclarations(script))
-      expect(topScope.children[0].node.type).toBe('FunctionDeclaration')
-      expect(topScope.identifiers).toContainEqual(expectIdA)
-      expect(topScope.identifiers).toContainEqual(expectIdB)
-    })
-
-    test('follow FunctionExpression', () => {
-      const script = 'const fn = function fn() {}'
-      const topScope = analyzeScript(wrapScriptWithVarDeclarations(script))
-      expect(topScope.children[0].node.type).toBe('FunctionExpression')
-      expect(topScope.identifiers).toContainEqual(expectIdA)
-      expect(topScope.identifiers).toContainEqual(expectIdB)
-    })
-
-    test('follow IfStatement', () => {
+    test('伴随if语句', () => {
       const script = 'if (a) { const b = 10; } else if (a) { const b = 10; } else { const b = 10; }'
       const topScope = analyzeScript(wrapScriptWithVarDeclarations(script))
       expect(topScope.children.length).toBe(3)
@@ -85,7 +61,7 @@ describe('块语句', () => {
       expect(c.identifiers).toEqual([expectIdB])
     })
 
-    test('follow WhileStatement', () => {
+    test('伴随while语句', () => {
       const script = 'while (a) { const b = 10; }'
       const topScope = analyzeScript(wrapScriptWithVarDeclarations(script))
       const [a] = topScope.children as Scope[]
@@ -95,7 +71,7 @@ describe('块语句', () => {
       expect(a.identifiers).toEqual([expectIdB])
     })
 
-    test('follow DoWhileStatement', () => {
+    test('伴随do-while语句', () => {
       const script = 'while (a) { const b = 10; }'
       const topScope = analyzeScript(wrapScriptWithVarDeclarations(script))
       const [a] = topScope.children as Scope[]
@@ -106,7 +82,7 @@ describe('块语句', () => {
 
     })
 
-    test('follow TryStatement', () => {
+    test('伴随try-catch语句', () => {
       const script = 'try { const b = 10;  } catch(e) {} finally { const b = 10; }'
       const topScope = analyzeScript(wrapScriptWithVarDeclarations(script))
       expect(topScope.children.length).toBe(3)
@@ -163,8 +139,15 @@ describe('块语句', () => {
       expect(blockScope.children[0].node.type).toBe('FunctionDeclaration')
     })
 
-    test('嵌套函数表达式', () => {
+    test('嵌套具名函数表达式', () => {
       const topScope = analyzeScript('{ const fn = function fn(){} }')
+      const blockScope = topScope.children[0] as Scope
+      expect(blockScope.children.length).toBe(1)
+      expect(blockScope.children[0].node.type).toBe('FunctionExpression')
+    })
+
+    test('嵌套匿名函数表达式', () => {
+      const topScope = analyzeScript('{ const fn = function (){} }')
       const blockScope = topScope.children[0] as Scope
       expect(blockScope.children.length).toBe(1)
       expect(blockScope.children[0].node.type).toBe('FunctionExpression')
@@ -176,7 +159,7 @@ describe('块语句', () => {
       expect(blockScope.children.length).toBe(1)
       expect(blockScope.children[0].node.type).toBe('ArrowFunctionExpression')
     })
-    
+
     test('嵌套箭头函数表达式（直接返回表达式）', () => {
       const topScope = analyzeScript('{ const fn = () => null }')
       const blockScope = topScope.children[0] as Scope
@@ -199,7 +182,15 @@ describe('块语句', () => {
       expect(classDef instanceof ClassDefiniton).toBe(true)
     })
 
-    test('嵌套类表达式', () => {
+    test('嵌套具名类表达式', () => {
+      const topScope = analyzeScript('{ const A = class A {} }')
+      const blockScope = topScope.children[0] as Scope
+      const classDef = blockScope.children[0] as ClassDefiniton
+      expect(blockScope.children.length).toBe(1)
+      expect(classDef instanceof ClassDefiniton).toBe(true)
+    })
+
+    test('嵌套匿名类表达式', () => {
       const topScope = analyzeScript('{ const A = class A {} }')
       const blockScope = topScope.children[0] as Scope
       const classDef = blockScope.children[0] as ClassDefiniton

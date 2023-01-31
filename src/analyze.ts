@@ -106,6 +106,7 @@ export default function analyze(node: ScopeNode) {
         if (node.id) {
           setCurrentType('function')
         } else {
+          inPatternCtx = true
           currentArea = new Scope(currentArea, node)
         }
       } else if (node.type === 'ClassDeclaration' && node.id) {
@@ -201,7 +202,7 @@ export default function analyze(node: ScopeNode) {
             inPatternCtx = false
           }
         }
-      } 
+      }
     }
   })
 

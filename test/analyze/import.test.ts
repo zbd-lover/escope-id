@@ -1,7 +1,7 @@
 import type { IdentifierInScope } from '../../src'
 import { analyzeModule } from '../helpers/analyze'
 
-test('应分析导入的标识符', () => {
+test('应正确分析导入的标识符', () => {
   const script = `
     import A from 'moduleA'
     import * as B from 'moduleA';

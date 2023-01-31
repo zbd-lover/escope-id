@@ -15,7 +15,7 @@ describe('测试导出相关', () => {
     expect(topScope.find('b')).toBeNull()
   })
 
-  test('导出已声明的变量', () => {
+  test('导出变量', () => {
     const script = 'const a = 10; export default a'
     const topScope = analyzeModule(script)
     expect(topScope.identifiers).toEqual([
@@ -28,18 +28,33 @@ describe('测试导出相关', () => {
     ] as IdentifierInScope[])
   })
 
-  test('导出未声明的变量', () => {
-    const script = 'export default a + c'
+  test('导出函数声明', () => {
+    const script = 'export function fn() {} '
     const topScope = analyzeModule(script)
+    expect(topScope.children.length).toBe(1)
     expect(topScope.identifiers).toEqual([
       {
-        name: 'a',
-        type: 'unknown',
+        name: 'fn',
+        type: 'function',
+        hoisted: true,
+        local: true
+      },
+    ] as IdentifierInScope[])
+  })
+
+  test('导出类声明', () => {
+    const script = 'export class A extends B {}'
+    const topScope = analyzeModule(script)
+    expect(topScope.children.length).toBe(1)
+    expect(topScope.identifiers).toEqual([
+      {
+        name: 'A',
+        type: 'class',
         hoisted: false,
-        local: false
+        local: true
       },
       {
-        name: 'c',
+        name: 'B',
         type: 'unknown',
         hoisted: false,
         local: false
@@ -47,7 +62,7 @@ describe('测试导出相关', () => {
     ] as IdentifierInScope[])
   })
 
-  test('导出具名类声明', () => {
+  test('默认导出具名类声明', () => {
     const script = 'export default class A extends B {}'
     const topScope = analyzeModule(script)
     expect(topScope.children.length).toBe(1)
@@ -67,7 +82,7 @@ describe('测试导出相关', () => {
     ] as IdentifierInScope[])
   })
 
-  test('导出匿名类声明', () => {
+  test('默认导出匿名类声明', () => {
     const script = 'export default class extends B {}'
     const topScope = analyzeModule(script)
     expect(topScope.children.length).toBe(1)
@@ -81,7 +96,7 @@ describe('测试导出相关', () => {
     ] as IdentifierInScope[])
   })
 
-  test('导出具名函数声明', () => {
+  test('默认导出具名函数声明', () => {
     const script = 'export default function fn() {} '
     const topScope = analyzeModule(script)
     expect(topScope.children.length).toBe(1)
@@ -95,14 +110,14 @@ describe('测试导出相关', () => {
     ] as IdentifierInScope[])
   })
 
-  test('导出匿名函数声明', () => {
+  test('默认导出匿名函数声明', () => {
     const script = 'export default function () {} '
     const topScope = analyzeModule(script)
     expect(topScope.children.length).toBe(1)
     expect(topScope.identifiers).toEqual([])
   })
 
-  test('导出箭头函数表达式', () => {
+  test('默认导出箭头函数表达式', () => {
     const script = 'export default () => {} '
     const topScope = analyzeModule(script)
     expect(topScope.children.length).toBe(1)

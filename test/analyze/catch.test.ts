@@ -18,7 +18,7 @@ describe('catch语句', () => {
 
     function test1() {
       const topScope = analyzeScript(wrapScriptWithVarDeclarations('try {} catch(e) { const a = 10 }'))
-      const catchScope = topScope.children[1] as Scope 
+      const catchScope = topScope.children[1] as Scope
       expect(topScope.children.length).toBe(2)
       expect(topScope.identifiers).toEqual([expectIdA, expectIdB])
       expect(catchScope.identifiers).toEqual([
@@ -39,7 +39,7 @@ describe('catch语句', () => {
 
     function test2() {
       const topScope = analyzeScript(wrapScriptWithVarDeclarations('try {} catch({ a, b = c, d: { e, f } }) { const g = 1; }'))
-      const catchScope = topScope.children[1] as Scope 
+      const catchScope = topScope.children[1] as Scope
       expect(topScope.children.length).toBe(2)
       expect(topScope.identifiers).toEqual([expectIdA, expectIdB])
       expect(catchScope.identifiers).toEqual([
@@ -129,8 +129,15 @@ describe('catch语句', () => {
       expect(catchScope.children[0].node.type).toBe('FunctionDeclaration')
     })
 
-    test('嵌套函数表达式', () => {
+    test('嵌套具名函数表达式', () => {
       const topScope = analyzeScript('try {} catch(e) { const fn = function fn(){} }')
+      const catchScope = topScope.children[1] as Scope
+      expect(catchScope.children.length).toBe(1)
+      expect(catchScope.children[0].node.type).toBe('FunctionExpression')
+    })
+
+    test('嵌套匿名函数表达式', () => {
+      const topScope = analyzeScript('try {} catch(e) { const fn = function (){} }')
       const catchScope = topScope.children[1] as Scope
       expect(catchScope.children.length).toBe(1)
       expect(catchScope.children[0].node.type).toBe('FunctionExpression')
@@ -142,7 +149,7 @@ describe('catch语句', () => {
       expect(catchScope.children.length).toBe(1)
       expect(catchScope.children[0].node.type).toBe('ArrowFunctionExpression')
     })
-    
+
     test('嵌套箭头函数表达式（直接返回表达式）', () => {
       const topScope = analyzeScript('try {} catch(e) { const fn = () => null }')
       const catchScope = topScope.children[1] as Scope
@@ -165,8 +172,16 @@ describe('catch语句', () => {
       expect(classDef instanceof ClassDefiniton).toBe(true)
     })
 
-    test('嵌套类表达式', () => {
+    test('嵌套具名类表达式', () => {
       const topScope = analyzeScript('try {} catch(e) {  const A = class A {} }')
+      const catchScope = topScope.children[1] as Scope
+      const classDef = catchScope.children[0] as ClassDefiniton
+      expect(catchScope.children.length).toBe(1)
+      expect(classDef instanceof ClassDefiniton).toBe(true)
+    })
+
+    test('嵌套匿名类表达式', () => {
+      const topScope = analyzeScript('try {} catch(e) {  const A = class {} }')
       const catchScope = topScope.children[1] as Scope
       const classDef = catchScope.children[0] as ClassDefiniton
       expect(catchScope.children.length).toBe(1)

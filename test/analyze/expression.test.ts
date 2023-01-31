@@ -207,8 +207,29 @@ describe('测试表达式中的标识符是否被正确分析', () => {
     )
   })
 
-  test('类表达式', () => {
+  test('具名类表达式', () => {
     const script = 'const A = class A extends B {}'
+    const topScope = analyzeScript(script)
+    expect(topScope.identifiers).toEqual(
+      [
+        {
+          name: 'A',
+          type: 'variable',
+          hoisted: false,
+          local: true,
+        },
+        {
+          name: 'B',
+          type: 'unknown',
+          hoisted: false,
+          local: false,
+        },
+      ] as IdentifierInScope[]
+    )
+  })
+
+  test('匿名类表达式', () => {
+    const script = 'const A = class extends B {}'
     const topScope = analyzeScript(script)
     expect(topScope.identifiers).toEqual(
       [
@@ -261,8 +282,23 @@ describe('测试表达式中的标识符是否被正确分析', () => {
     )
   })
 
-  test('函数表达式', () => {
+  test('具名函数表达式', () => {
     const script = 'const fn1 = function fn1(a, b, c){}'
+    const topScope = analyzeScript(script)
+    expect(topScope.identifiers).toEqual(
+      [
+        {
+          name: 'fn1',
+          type: 'variable',
+          hoisted: false,
+          local: true,
+        }
+      ] as IdentifierInScope[]
+    )
+  })
+
+  test('匿名函数表达式', () => {
+    const script = 'const fn1 = function (a, b, c){}'
     const topScope = analyzeScript(script)
     expect(topScope.identifiers).toEqual(
       [
