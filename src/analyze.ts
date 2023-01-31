@@ -1,11 +1,24 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import * as ESTree from 'estree'
-import { traverse, Syntax } from 'estraverse'
+import { traverse, VisitorKeys } from 'estraverse'
 import { Scope, type IdentifierInScope, ScopeNode, IdType } from './scope'
 import { ClassDefiniton, type ClassMetaDefiniton, ClassMetaDefinitonType } from './class-def'
 
 function isFunctionNode(node: ESTree.Node): node is ESTree.Function {
   return node.type === 'FunctionDeclaration' || node.type === 'FunctionExpression' || node.type === 'ArrowFunctionExpression'
+}
+
+const keys: Partial<VisitorKeys> = {
+  MetaProperty: [],
+  BreakStatement: [],
+  ContinueStatement: [],
+  LabeledStatement: ['body'],
+  ImportExpression: [],
+  ImportDeclaration: ['specifiers'],
+  ImportSpecifier: ['local'],
+  ExportNamedDeclaration: ['declaration'],
+  ExportAllDeclaration: [],
+  TemplateLiteral: ['expressions']
 }
 
 export default function analyze(node: ScopeNode) {
@@ -34,18 +47,7 @@ export default function analyze(node: ScopeNode) {
   }
 
   traverse(node, {
-    keys: {
-      [Syntax['MetaProperty']]: [],
-      [Syntax['BreakStatement']]: [],
-      [Syntax['ContinueStatement']]: [],
-      [Syntax['LabeledStatement']]: ['body'],
-      [Syntax['ImportExpression']]: [],
-      [Syntax['ImportDeclaration']]: ['specifiers'],
-      [Syntax['ImportSpecifier']]: ['local'],
-      [Syntax['ExportNamedDeclaration']]: ['declaration'],
-      [Syntax['ExportAllDeclaration']]: [],
-      [Syntax['TemplateLiteral']]: ['expressions'],
-    },
+    keys,
 
     enter(node, parent) {
       // node is Program
