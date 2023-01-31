@@ -23,15 +23,13 @@ export default function analyze(node: ScopeNode) {
     return ret
   }
 
-  let currentArea: Scope | ClassDefiniton | null = new Scope(null, node)
+  let currentArea: Scope | ClassDefiniton = new Scope(null, node)
   const rootArea = currentArea
   function pushElToCurrentArea(el: IdentifierInScope | ClassMetaDefiniton) {
-    if (currentArea) {
-      if (currentArea instanceof Scope) {
-        currentArea.identifiers.push(el as IdentifierInScope)
-      } else {
-        currentArea.definitions.push(el as ClassMetaDefiniton)
-      }
+    if (currentArea instanceof Scope) {
+      currentArea.identifiers.push(el as IdentifierInScope)
+    } else {
+      currentArea.definitions.push(el as ClassMetaDefiniton)
     }
   }
 
@@ -187,7 +185,7 @@ export default function analyze(node: ScopeNode) {
         (node.type === 'ArrowFunctionExpression' && node.expression)
       ) {
         inPatternCtx = false
-        currentArea = currentArea!.parent
+        currentArea = currentArea!.parent!
       }
 
       if (parent.type === 'SwitchStatement' && parent.discriminant === node) {
