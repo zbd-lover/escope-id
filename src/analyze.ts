@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import * as ESTree from 'estree'
 import { traverse, VisitorKeys } from 'estraverse'
-import { Scope, ClassDefiniton, type IdentifierInScope, ScopeNode, IdType, ClassMetaDefiniton, ClassMetaDefinitonType } from './scope'
+import { Scope, ClassDefiniton, type IdentifierInScope, IdType, ClassMetaDefiniton, ClassMetaDefinitonType } from './scope'
 
 function isFunctionNode (node: ESTree.Node): node is ESTree.Function {
   return node.type === 'FunctionDeclaration' || node.type === 'FunctionExpression' || node.type === 'ArrowFunctionExpression'
@@ -20,7 +20,7 @@ const keys: Partial<VisitorKeys> = {
   TemplateLiteral: ['expressions']
 }
 
-export default function analyze (node: ScopeNode) {
+export default function analyze (node: ESTree.Program) {
   /** 是否在解构声明上下文中 */
   let inPatternCtx = false
   let currentVarKind: 'let' | 'var' | 'const' | null = null

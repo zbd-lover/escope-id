@@ -52,6 +52,7 @@ describe('测试核心类：ClassDefintion', () => {
     expect(classDef.find('method', 'method', true)).not.toBeNull()
     expect(classDef.find('value', 'get')).not.toBeNull()
     expect(classDef.find('value', 'set')).not.toBeNull()
+    expect(classDef.find('test')).toBeNull()
   })
 })
 
