@@ -10,6 +10,7 @@
       "dom",
       "es2017"
     ],
+    "noEmit": true,
     "allowJs": false,
     "checkJs": false,
     "sourceMap": true,
@@ -18,13 +19,12 @@
     "noUnusedParameters": true,
     "baseUrl": "./"
   },
-  "include": [
-    "src/**/*", "test/debug.ts", "test/debug.ts",
-  ],
+  "include": ["src/**/*",],
   "exclude": [
     "node_modules",
     "dist",
     "lib",
-    "es"
+    "es",
+    "src/__tests__/*"
   ]
 }

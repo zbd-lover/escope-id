@@ -4,5 +4,6 @@ module.exports = {
   testEnvironment: 'node',
   moduleFileExtensions: ['ts', 'js'],
   rootDir: __dirname,
-  testMatch: ['<rootDir>/**/__tests__/**/*test.[jt]s?(x)']
+  coveragePathIgnorePatterns: ['<rootDir>/src/__tests__/helpers'],
+  testMatch: ['<rootDir>/**/__tests__/**/*test.[jt]s']
 }

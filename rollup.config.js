@@ -21,7 +21,8 @@ export default defineConfig([
     plugins: [
       typescript({
         emitDeclarationOnly: false,
-        sourceMap: false
+        sourceMap: false,
+        module: 'esnext'
       }),
       nodeResolve(),
       babel()
@@ -36,7 +37,8 @@ export default defineConfig([
     plugins: [
       typescript({
         emitDeclarationOnly: false,
-        sourceMap: false
+        sourceMap: false,
+        module: 'esnext'
       }),
       commonjs(),
       nodeResolve(),
@@ -52,7 +54,8 @@ export default defineConfig([
     plugins: [
       typescript({
         emitDeclarationOnly: false,
-        sourceMap: false
+        sourceMap: false,
+        module: 'esnext'
       }),
       commonjs(),
       nodeResolve(),
@@ -87,7 +90,8 @@ export default defineConfig([
     plugins: [
       typescript({
         emitDeclarationOnly: false,
-        sourceMap: false
+        sourceMap: false,
+        module: 'esnext'
       }),
       commonjs(),
       nodeResolve(),
@@ -114,7 +118,8 @@ export default defineConfig([
     plugins: [
       typescript({
         emitDeclarationOnly: false,
-        sourceMap: false
+        sourceMap: false,
+        module: 'esnext'
       }),
       commonjs(),
       nodeResolve(),

@@ -15,19 +15,22 @@
   ],
   "scripts": {
     "test": "jest",
-    "clean": "rimraf lib dist es",
+    "clean": "rimraf lib dist es types",
     "coverage": "jest --coverage",
-    "tsd": "tsc --declaration true --emitDeclarationOnly true --declarationDir ./types",
-    "lint": "eslint --ext ts src",
-    "fix:lint": "eslint  --fix ./src",
+    "tsd": "tsc --declaration true --noEmit false --emitDeclarationOnly true --declarationDir ./types",
+    "lint": "eslint --ext ts src types",
+    "fix:lint": "eslint  --fix ./src ./types",
     "prepublish": "npm run clean && npm run tsd && npm run test && npm run lint && npm run fix:lint",
     "build": "rollup -c"
   },
   "keywords": [
-    "estree",
     "escope",
+    "escope-id",
     "identifier",
-    "analysis of identifier"
+    "analysis of identifier",
+    "analysis of class",
+    "analysis of scope",
+    "estree"
   ],
   "repository": {
     "type": "git",
