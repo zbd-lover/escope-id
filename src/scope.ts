@@ -188,3 +188,19 @@ export class ClassDefiniton extends Area<Class, Scope, Scope> {
     }) || null
   }
 }
+
+export function createAreaMap(area: Scope | ClassDefiniton) {
+  const map = new WeakMap<AcquiredNode, Scope | ClassDefiniton>()
+
+  function record(area: Scope | ClassDefiniton) {
+    map.set(area.node, area)
+    for (const child of area.children) {
+      record(child)
+    }
+  }
+  record(area)
+
+  return function acquire(node: AcquiredNode) {
+    return map.get(node) || null
+  }
+}

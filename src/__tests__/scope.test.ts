@@ -1,4 +1,4 @@
-import { ClassDefiniton, Scope } from '../scope'
+import { ClassDefiniton, createAreaMap, Scope } from '../scope'
 import { analyzeScript } from './helpers/analyze'
 
 describe('测试核心类：Scope', () => {
@@ -53,4 +53,16 @@ describe('测试核心类：ClassDefintion', () => {
     expect(classDef.find('value', 'get')).not.toBeNull()
     expect(classDef.find('value', 'set')).not.toBeNull()
   })
+})
+
+test('测试工具函数：createAreaMap', () => {
+  const script = 'const a = 10; function A(arg) { a }; console.log(a)'
+  const topScope = analyzeScript(script)
+  const node1 = topScope.node
+  const node2 = topScope.children[0].node
+  const acquire = createAreaMap(topScope)
+  expect(acquire(node1)).toBe(topScope)
+  expect(acquire(node2)).toBe(topScope.children[0])
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  expect(acquire({ ...node1 } as any)).toBe(null)
 })
