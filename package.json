@@ -1,6 +1,6 @@
 {
   "name": "escope-id",
-  "version": "1.0.2",
+  "version": "1.0.0",
   "description": "Analyze the definition of identifier based on estree",
   "main": "lib/escope-id.js",
   "unpkg": "dist/escope-id.js",
@@ -10,8 +10,10 @@
     "dist",
     "lib",
     "es",
-    "src",
-    "types"
+    "types",
+    "src/index.ts",
+    "src/analyze.ts",
+    "src/scope.ts"
   ],
   "scripts": {
     "test": "jest",
