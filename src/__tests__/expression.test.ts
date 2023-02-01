@@ -1,4 +1,4 @@
-import type { IdentifierInScope, Scope } from '../../src'
+import { Scope, type IdentifierInScope } from '../../src'
 import { analyzeScript, analyzeModule } from './helpers/analyze'
 
 describe('测试表达式中的标识符是否被正确分析', () => {

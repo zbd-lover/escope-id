@@ -1,4 +1,4 @@
-import { Program } from 'estree'
+import type { Program } from 'estree'
 import { parse as parseAST, type Options } from 'acorn'
 import { analyze } from '../../../src'
 

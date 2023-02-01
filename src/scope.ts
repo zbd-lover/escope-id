@@ -1,4 +1,5 @@
 import type {
+  Node,
   Class,
   ForInStatement,
   ForOfStatement,
@@ -10,8 +11,6 @@ import type {
   WithStatement,
   SwitchStatement,
 } from 'estree'
-
-export type AcquiredNode = ScopeNode | Class
 
 export type IdType = 'variable' | 'function' | 'class' | 'argument' | 'import' | 'unknown'
 
@@ -62,7 +61,7 @@ class Area<N, P extends Area<any, any, any>, C extends Area<any, any, any>> {
     }
   }
 
-  public acquire (node: AcquiredNode): Area<N, P, C> | null {
+  public acquire (node: Node): Area<N, P, C> | null {
     if (this.node === node) return this
     for (const child of this.children) {
       const ret = child.acquire(node)
@@ -125,7 +124,7 @@ export class Scope extends Area<ScopeNode, Scope | ClassDefiniton, Scope | Class
       // eslint-disable-next-line @typescript-eslint/no-this-alias
       let baseScope: Scope | ClassDefiniton | null = this
       while (baseScope) {
-        const node: AcquiredNode = baseScope.node
+        const node = baseScope.node
         if (node.type === 'FunctionExpression') {
           /**
            * 类的成员方法或者set和get也会形成作用域，且相应node的类型为FunctionExpression
@@ -190,7 +189,7 @@ export class ClassDefiniton extends Area<Class, Scope, Scope> {
 }
 
 export function createAreaMap (area: Scope | ClassDefiniton) {
-  const map = new WeakMap<AcquiredNode, Scope | ClassDefiniton>()
+  const map = new WeakMap<Node, Scope | ClassDefiniton>()
 
   function record (area: Scope | ClassDefiniton) {
     map.set(area.node, area)
@@ -200,7 +199,7 @@ export function createAreaMap (area: Scope | ClassDefiniton) {
   }
   record(area)
 
-  return function acquire (node: AcquiredNode) {
+  return function acquire (node: Node) {
     return map.get(node) || null
   }
 }
