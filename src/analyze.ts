@@ -21,7 +21,7 @@ const keys: Partial<VisitorKeys> = {
 }
 
 export default function analyze (node: ScopeNode) {
-  /** 是否在解构上下文中 */
+  /** 是否在解构声明上下文中 */
   let inPatternCtx = false
   let currentVarKind: 'let' | 'var' | 'const' | null = null
 
@@ -65,7 +65,6 @@ export default function analyze (node: ScopeNode) {
         inPatternCtx = false
       }
 
-      // 作用域更新
       if (
         node.type === 'ForInStatement' ||
         node.type === 'ForOfStatement' ||
@@ -131,7 +130,6 @@ export default function analyze (node: ScopeNode) {
         if (shouldSkip) return
 
         let type: IdType | ClassMetaDefinitonType = 'unknown'
-        // 判断是否是解构声明的变量或者函数参数
         if (inPatternCtx) {
           if (
             (isFunctionNode(parent) && parent.params.some((param) => param === node)) ||

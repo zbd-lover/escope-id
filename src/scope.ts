@@ -86,7 +86,8 @@ export class Scope extends Area<ScopeNode, Scope | ClassDefiniton, Scope | Class
   /** @internal */
   public finalize () {
     // 移除引用当前作用域变量但类型暂为unknown的标识符
-    // const a = 10; console.log(a) ;
+    // const a = 10; console.log(a) ; 
+    // 第二个'a'也会被写入identifiers，但类型为unknown
     const localIds = this.identifiers.filter((id) => id.local)
     const deletedIndex: number[] = []
     for (let i = 0, id: IdentifierInScope, l = this.identifiers.length; i < l; i++) {
@@ -97,9 +98,8 @@ export class Scope extends Area<ScopeNode, Scope | ClassDefiniton, Scope | Class
     }
     this.identifiers = this.identifiers.filter((_, index) => !deletedIndex.includes(index))
 
-    // 计算所有暂时为unknown类型的变量的真正类型
-    // 如果这个变量在某一祖先作用域中而非全局作用域被声明，则将类型和该祖先作用域中相应的变量类型保持一致
-    // 否则，类型确实为unknown
+    // 计算所有暂时为unknown类型的标识符的真正类型
+    // 如果这个标识符在祖先级作用域中被定义，则将类型与之保持一致
     const unknownIds = this.identifiers.filter((id) => id.type === 'unknown')
     let baseScope = this.parent
     while (baseScope) {
@@ -119,7 +119,7 @@ export class Scope extends Area<ScopeNode, Scope | ClassDefiniton, Scope | Class
     // 边界情况1：const a = function A() { console.log(A) }
     // 边界情况2：const a = class A { method1() { console.log(A) } }
     // 函数A和类A没有在某个作用域被定义（在该作用域中无法访问到），但可在其内部被访问到
-    // 无法在相应的作用域中访问到，意味对应标识符的类型为unknown
+    // 无法在相应的作用域中访问到，意味在该作用域中标识符的类型为unknown
     // 但实际上我们可以确定这些标识符的类型为'function'或'class'
     unknownIds.forEach((id) => {
       // eslint-disable-next-line @typescript-eslint/no-this-alias
@@ -127,17 +127,16 @@ export class Scope extends Area<ScopeNode, Scope | ClassDefiniton, Scope | Class
       while (baseScope) {
         const node: AcquiredNode = baseScope.node
         if (node.type === 'FunctionExpression') {
-          const parentScope = baseScope.parent
           /**
-           * 避免误判。类的成员方法或者set和get也会形成作用域
-           * 且相应node的类型为FunctionExpression
+           * 类的成员方法或者set和get也会形成作用域，且相应node的类型为FunctionExpression
            * 这种情况下，和边界情况1很相似，但并不一样，应进行忽略
            * const a = class A {
            *  method() {
-           *    method(); // 它会在当前以及祖先作用域中寻找被定义的method变量，而不是相当于'this.method()'
+           *    method(); // 它应该在当前以及祖先作用域中寻找被定义的method变量，而不是相当于'this.method()'
            *  }
            * }
            */
+          const parentScope = baseScope.parent
           if (!(parentScope &&
             parentScope instanceof ClassDefiniton &&
             parentScope.find(id.name))
@@ -172,18 +171,12 @@ export class Scope extends Area<ScopeNode, Scope | ClassDefiniton, Scope | Class
   }
 }
 
-export class ClassDefiniton extends Area<Class, Scope, Scope | ClassDefiniton> {
+export class ClassDefiniton extends Area<Class, Scope, Scope> {
   public definitions: ClassMetaDefiniton[]
 
   constructor (parent: Scope | null, node: Class) {
     super(parent, node)
     this.definitions = []
-  }
-
-  public finalize () {
-    for (const scope of this.children) {
-      scope.finalize()
-    }
   }
 
   public find (name: string, type?: ClassMetaDefinitonType, _static?: boolean) {
