@@ -84,22 +84,39 @@ export class Scope extends Area<ScopeNode, Scope | ClassDefiniton, Scope | Class
 
   /** @internal */
   public finalize () {
-    // 移除引用当前作用域变量但类型暂为unknown的标识符
-    // const a = 10; console.log(a) ; 
-    // 第二个'a'也会被写入identifiers，但类型为unknown
+    const deletedIndexs: number[] = []
+
     const localIds = this.identifiers.filter((id) => id.local)
-    const deletedIndex: number[] = []
-    for (let i = 0, id: IdentifierInScope, l = this.identifiers.length; i < l; i++) {
+    const duplicatedIds = new Set<IdentifierInScope>()
+    let unknownIds = this.identifiers.filter((id) => id.type === 'unknown')
+    unknownIds.forEach((id, index) => {
+      const startIndex = unknownIds.findIndex((_id) => _id.name === id.name)
+      if (startIndex !== index) {
+        duplicatedIds.add(id)
+      }
+    })
+
+    for (let i = 0, startIndex: number, id: IdentifierInScope, l = this.identifiers.length; i < l; i++) {
       id = this.identifiers[i]
+      // 移除引用当前作用域变量但类型暂为unknown的标识符
+      // 场景：const a = 10; console.log(a); 
       if (localIds.some((_id) => _id.name === id.name) && id.type === 'unknown') {
-        deletedIndex.push(i)
+        deletedIndexs.push(i)
+      } else {
+        // 移除重复标识符
+        // 场景：console.log(console)
+        startIndex = this.identifiers.findIndex((_id) => _id.name === id.name)
+        if (duplicatedIds.has(id) && (startIndex !== i)) {
+          deletedIndexs.push(i)
+        }
       }
     }
-    this.identifiers = this.identifiers.filter((_, index) => !deletedIndex.includes(index))
+    this.identifiers = this.identifiers.filter((_, index) => !deletedIndexs.includes(index))
+    duplicatedIds.clear()
 
+    unknownIds = this.identifiers.filter((id) => id.type === 'unknown')
     // 计算所有暂时为unknown类型的标识符的真正类型
     // 如果这个标识符在祖先级作用域中被定义，则将类型与之保持一致
-    const unknownIds = this.identifiers.filter((id) => id.type === 'unknown')
     let baseScope = this.parent
     while (baseScope) {
       if (baseScope instanceof Scope) {

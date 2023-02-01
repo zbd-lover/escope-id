@@ -39,7 +39,7 @@ describe('测试变量声明的标识符是否被正确分析', () => {
   })
 
   test('使用对象解构声明的变量', () => {
-    const script = 'const { a, b: c, d = globalVar1, e: { f, g }, ...rest } = obj'
+    const script = 'const { a, b: c, d = globalVar1, e: { f, g }, [_i]: i, ...rest } = obj'
     const topScope = analyzeScript(script)
     expect(topScope.identifiers).toEqual(
       [
@@ -80,6 +80,18 @@ describe('测试变量声明的标识符是否被正确分析', () => {
           local: true,
         },
         {
+          name: '_i',
+          type: 'unknown',
+          hoisted: false,
+          local: false,
+        },
+        {
+          name: 'i',
+          type: 'variable',
+          hoisted: false,
+          local: true,
+        },
+        {
           name: 'rest',
           type: 'variable',
           hoisted: false,
@@ -90,13 +102,13 @@ describe('测试变量声明的标识符是否被正确分析', () => {
           type: 'unknown',
           hoisted: false,
           local: false,
-        }
+        },
       ] as IdentifierInScope[]
     )
   })
 
   test('使用数组解构声明的变量', () => {
-    const script = 'const [a, c, d = globalVar1, [f, g], ...rest] = obj'
+    const script = 'const [a, c, d = globalVar1, [f, g], ...rest] = obj; const [...{ h, i }] = obj;'
     const topScope = analyzeScript(script)
     expect(topScope.identifiers).toEqual(
       [
@@ -147,6 +159,18 @@ describe('测试变量声明的标识符是否被正确分析', () => {
           type: 'unknown',
           hoisted: false,
           local: false,
+        },
+        {
+          name: 'h',
+          type: 'variable',
+          hoisted: false,
+          local: true,
+        },
+        {
+          name: 'i',
+          type: 'variable',
+          hoisted: false,
+          local: true,
         }
       ] as IdentifierInScope[]
     )
