@@ -63,10 +63,10 @@ class Scope {
   /** 根据名称查询一个标识符 */
   public find(name: string): IdentifierInScope // 标识符的name在当前作用域中是唯一的
   /**
-   * 根据名称来计算对应标识符在何处声明
-   * 如果目标标识符不存在，返回'unknown';
-   * 如果目标标识符存在，且它的'local'属性值为true，返回'local'
-   * 如果目标标识符存在，且它的'local'属性值为false，type属性值为'unknown'返回'global否则返回'ancestral'
+   * 根据名称来判断对应标识符在何处声明
+   * 如果目标标识符在当前作用域中不存在，返回'unknown'；
+   * 如果存在且它的'local'属性值为true，返回'local'；
+   * 如果存在且它的'local'属性值为false，type属性值为'unknown'时返回'global否则返回'ancestral'。
    * */
   public where(name: string): 'unknown' | 'local' | 'ancestral' | 'glboal'
 
