@@ -50,7 +50,7 @@ describe('测试表达式中的标识符是否被正确分析', () => {
     )
   })
 
-  test('赋值表达式（不使用数组解构赋值）', () => {
+  test('赋值表达式（直接赋值）', () => {
     const script = 'const arr = []; arr = [a, b]'
     const topScope = analyzeScript(script)
     expect(topScope.identifiers).toEqual(
@@ -94,6 +94,33 @@ describe('测试表达式中的标识符是否被正确分析', () => {
           hoisted: false,
           local: false,
         }
+      ] as IdentifierInScope[]
+    )
+  })
+
+  test('赋值表达式（使用对象解构赋值）', () => {
+    const script = 'let obj = {}, a, b; ({ user: a, age: b } = obj);({ a, b } = { a: 1, b: 2 })'
+    const topScope = analyzeScript(script)
+    expect(topScope.identifiers).toEqual(
+      [
+        {
+          name: 'obj',
+          type: 'variable',
+          hoisted: false,
+          local: true,
+        },
+        {
+          name: 'a',
+          type: 'variable',
+          hoisted: false,
+          local: true,
+        },
+        {
+          name: 'b',
+          type: 'variable',
+          hoisted: false,
+          local: true,
+        },
       ] as IdentifierInScope[]
     )
   })
