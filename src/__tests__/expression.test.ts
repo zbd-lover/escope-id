@@ -465,11 +465,19 @@ describe('测试表达式中的标识符是否被正确分析', () => {
     )
   })
 
-  test('元属性表达式', () => {
+  test('元属性表达式1', () => {
     const script = 'import.meta'
     const topScope = analyzeModule(script)
     expect(topScope.identifiers.length).toBe(0)
   })
+
+  test('元属性表达式2', () => {
+    const script = 'function fn() { console.log(new.target) }'
+    const topScope = analyzeScript(script)
+    const fnScope = topScope.children[0] as Scope
+    expect(fnScope.identifiers.length).toBe(1)
+  })
+
 
   test('new表达式', () => {
     const script = 'const a = new A(b, c, ...d);'
@@ -645,5 +653,18 @@ describe('测试表达式中的标识符是否被正确分析', () => {
         }
       ]
     )
+  })
+
+  test('return语句返回的表达式', () => {
+    const script = 'const a = () => { return b }'
+    const fnScope = analyzeScript(script).children[0] as Scope
+    expect(fnScope.identifiers).toEqual([
+      {
+        name: 'b',
+        type: 'unknown',
+        local: false,
+        hoisted: false
+      }
+    ] as IdentifierInScope[])
   })
 })
