@@ -96,7 +96,11 @@ import { parse } from 'acorn';
 import { analyze } from 'escope-id';
 const script = 'const a = 10; console.log(a)';
 const topScope = analyze(parse(script))
-console.log(topScope.identifiers) // [ { name: 'a', type: 'variable', hoisted: false, local: true }]
+console.log(topScope.identifiers)
+// [
+//   { name: 'a', type: 'variable', hoisted: false, local: true },
+//   { name: 'console', type: 'unknown', hoisted: false, local: false }
+// ]
 console.log(topScope.where('console')) // 'global'
 ```
 ## createAreaMap
