@@ -1,4 +1,4 @@
-import { Scope, type IdentifierInScope } from '../../src'
+import { type IdentifierInScope } from '../../src'
 import { analyzeScript, analyzeModule } from './helpers/analyze'
 
 describe('测试表达式中的标识符是否被正确分析', () => {
@@ -128,7 +128,7 @@ describe('测试表达式中的标识符是否被正确分析', () => {
   test('await表达式', () => {
     const script = 'async function fn1() { await promise0; }'
     const topScope = analyzeScript(script)
-    const targetScope = topScope.children[0] as Scope
+    const targetScope = topScope.children[0]
     expect(targetScope.identifiers).toEqual(
       [
         {
@@ -474,7 +474,7 @@ describe('测试表达式中的标识符是否被正确分析', () => {
   test('元属性表达式2', () => {
     const script = 'function fn() { console.log(new.target) }'
     const topScope = analyzeScript(script)
-    const fnScope = topScope.children[0] as Scope
+    const fnScope = topScope.children[0]
     expect(fnScope.identifiers.length).toBe(1)
   })
 
@@ -642,7 +642,7 @@ describe('测试表达式中的标识符是否被正确分析', () => {
   test('yield表达式', () => {
     const script = 'function* gen() { yield a }'
     const topScope = analyzeScript(script)
-    const targetScope = topScope.children[0] as Scope
+    const targetScope = topScope.children[0]
     expect(targetScope.identifiers).toEqual(
       [
         {
@@ -657,7 +657,7 @@ describe('测试表达式中的标识符是否被正确分析', () => {
 
   test('return语句返回的表达式', () => {
     const script = 'const a = () => { return b }'
-    const fnScope = analyzeScript(script).children[0] as Scope
+    const fnScope = analyzeScript(script).children[0]
     expect(fnScope.identifiers).toEqual([
       {
         name: 'b',

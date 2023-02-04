@@ -1,4 +1,4 @@
-import { ClassDefiniton, Scope, type IdentifierInScope } from '../../src'
+import { type IdentifierInScope } from '../../src'
 import { analyzeScript, wrapScriptWithVarDeclarations } from './helpers/analyze'
 
 describe('块语句', () => {
@@ -19,7 +19,7 @@ describe('块语句', () => {
     test('在Js全局运行环境中', () => {
       const script = '{ const a = 10 }'
       const topScope = analyzeScript(wrapScriptWithVarDeclarations(script))
-      const blockScope = topScope.children[0] as Scope
+      const blockScope = topScope.children[0]
       expect(topScope.children.length).toBe(1)
       expect(topScope.identifiers).toEqual([expectIdA, expectIdB])
       expect(blockScope.node.type).toBe('BlockStatement')
@@ -52,7 +52,7 @@ describe('块语句', () => {
       const topScope = analyzeScript(wrapScriptWithVarDeclarations(script))
       expect(topScope.children.length).toBe(3)
       expect(topScope.identifiers).toEqual([expectIdA, expectIdB])
-      const [a, b, c] = topScope.children as Scope[]
+      const [a, b, c] = topScope.children
       expect(a.node.type).toBe('BlockStatement')
       expect(b.node.type).toBe('BlockStatement')
       expect(c.node.type).toBe('BlockStatement')
@@ -64,7 +64,7 @@ describe('块语句', () => {
     test('伴随while语句', () => {
       const script = 'while (a) { const b = 10; }'
       const topScope = analyzeScript(wrapScriptWithVarDeclarations(script))
-      const [a] = topScope.children as Scope[]
+      const [a] = topScope.children
       expect(topScope.children.length).toBe(1)
       expect(topScope.children[0].node.type).toBe('BlockStatement')
       expect(topScope.identifiers).toEqual([expectIdA, expectIdB])
@@ -74,7 +74,7 @@ describe('块语句', () => {
     test('伴随do-while语句', () => {
       const script = 'while (a) { const b = 10; }'
       const topScope = analyzeScript(wrapScriptWithVarDeclarations(script))
-      const [a] = topScope.children as Scope[]
+      const [a] = topScope.children
       expect(topScope.children.length).toBe(1)
       expect(topScope.children[0].node.type).toBe('BlockStatement')
       expect(topScope.identifiers).toEqual([expectIdA, expectIdB])
@@ -87,7 +87,7 @@ describe('块语句', () => {
       const topScope = analyzeScript(wrapScriptWithVarDeclarations(script))
       expect(topScope.children.length).toBe(3)
       expect(topScope.identifiers).toEqual([expectIdA, expectIdB])
-      const [a, b, c] = topScope.children as Scope[]
+      const [a, b, c] = topScope.children
       expect(a.node.type).toBe('BlockStatement')
       expect(b.node.type).toBe('CatchClause')
       expect(c.node.type).toBe('BlockStatement')
@@ -99,109 +99,109 @@ describe('块语句', () => {
   describe('允许嵌套其它语句或表达式生成的作用域', () => {
     test('嵌套块语句', () => {
       const topScope = analyzeScript('{ { } }')
-      const blockScope = topScope.children[0] as Scope
+      const blockScope = topScope.children[0]
       expect(blockScope.children.length).toBe(1)
       expect(blockScope.children[0].node.type).toBe('BlockStatement')
     })
 
     test('嵌套switch语句', () => {
       const topScope = analyzeScript('{ switch(a) {} }')
-      const blockScope = topScope.children[0] as Scope
+      const blockScope = topScope.children[0]
       expect(blockScope.children.length).toBe(1)
       expect(blockScope.children[0].node.type).toBe('SwitchStatement')
     })
 
     test('嵌套for语句', () => {
       const topScope = analyzeScript('{ for(;;) {} }')
-      const blockScope = topScope.children[0] as Scope
+      const blockScope = topScope.children[0]
       expect(blockScope.children.length).toBe(1)
       expect(blockScope.children[0].node.type).toBe('ForStatement')
     })
 
     test('嵌套for-in语句', () => {
       const topScope = analyzeScript('{ for(const key in keys) {} }')
-      const blockScope = topScope.children[0] as Scope
+      const blockScope = topScope.children[0]
       expect(blockScope.children.length).toBe(1)
       expect(blockScope.children[0].node.type).toBe('ForInStatement')
     })
 
     test('嵌套for-of语句', () => {
       const topScope = analyzeScript('{ for(const key of keys) {} }')
-      const blockScope = topScope.children[0] as Scope
+      const blockScope = topScope.children[0]
       expect(blockScope.children.length).toBe(1)
       expect(blockScope.children[0].node.type).toBe('ForOfStatement')
     })
 
     test('嵌套函数声明', () => {
       const topScope = analyzeScript('{ function fn(){} }')
-      const blockScope = topScope.children[0] as Scope
+      const blockScope = topScope.children[0]
       expect(blockScope.children.length).toBe(1)
       expect(blockScope.children[0].node.type).toBe('FunctionDeclaration')
     })
 
     test('嵌套具名函数表达式', () => {
       const topScope = analyzeScript('{ const fn = function fn(){} }')
-      const blockScope = topScope.children[0] as Scope
+      const blockScope = topScope.children[0]
       expect(blockScope.children.length).toBe(1)
       expect(blockScope.children[0].node.type).toBe('FunctionExpression')
     })
 
     test('嵌套匿名函数表达式', () => {
       const topScope = analyzeScript('{ const fn = function (){} }')
-      const blockScope = topScope.children[0] as Scope
+      const blockScope = topScope.children[0]
       expect(blockScope.children.length).toBe(1)
       expect(blockScope.children[0].node.type).toBe('FunctionExpression')
     })
 
     test('嵌套箭头函数表达式（携带语句块）', () => {
       const topScope = analyzeScript('{ const fn = () => {} }')
-      const blockScope = topScope.children[0] as Scope
+      const blockScope = topScope.children[0]
       expect(blockScope.children.length).toBe(1)
       expect(blockScope.children[0].node.type).toBe('ArrowFunctionExpression')
     })
 
     test('嵌套箭头函数表达式（直接返回表达式）', () => {
       const topScope = analyzeScript('{ const fn = () => null }')
-      const blockScope = topScope.children[0] as Scope
+      const blockScope = topScope.children[0]
       expect(blockScope.children.length).toBe(1)
       expect(blockScope.children[0].node.type).toBe('ArrowFunctionExpression')
     })
 
     test('嵌套try-catch语句', () => {
       const topScope = analyzeScript('{ try {} catch(e) {} }')
-      const blockScope = topScope.children[0] as Scope
+      const blockScope = topScope.children[0]
       expect(blockScope.children.length).toBe(2)
       expect(blockScope.children[1].node.type).toBe('CatchClause')
     })
 
     test('嵌套类声明', () => {
       const topScope = analyzeScript('{ class A {} }')
-      const blockScope = topScope.children[0] as Scope
-      const classDef = blockScope.children[0] as ClassDefiniton
+      const blockScope = topScope.children[0]
+      const classScope = blockScope.children[0]
       expect(blockScope.children.length).toBe(1)
-      expect(classDef instanceof ClassDefiniton).toBe(true)
+      expect(classScope.node.type).toBe('ClassDeclaration')
     })
 
     test('嵌套具名类表达式', () => {
       const topScope = analyzeScript('{ const A = class A {} }')
-      const blockScope = topScope.children[0] as Scope
-      const classDef = blockScope.children[0] as ClassDefiniton
+      const blockScope = topScope.children[0]
+      const classScope = blockScope.children[0]
       expect(blockScope.children.length).toBe(1)
-      expect(classDef instanceof ClassDefiniton).toBe(true)
+      expect(classScope.node.type).toBe('ClassExpression')
     })
 
     test('嵌套匿名类表达式', () => {
-      const topScope = analyzeScript('{ const A = class A {} }')
-      const blockScope = topScope.children[0] as Scope
-      const classDef = blockScope.children[0] as ClassDefiniton
+      const topScope = analyzeScript('{ const A = class {} }')
+      const blockScope = topScope.children[0]
+      const classScope = blockScope.children[0]
       expect(blockScope.children.length).toBe(1)
-      expect(classDef instanceof ClassDefiniton).toBe(true)
+      expect(classScope.node.type).toBe('ClassExpression')
     })
 
     test('嵌套with语句', () => {
       const topScope = analyzeScript('{ with(window){} }')
-      const blockScope = topScope.children[0] as Scope
-      const withScope = blockScope.children[0] as Scope
+      const blockScope = topScope.children[0]
+      const withScope = blockScope.children[0]
       expect(blockScope.children.length).toBe(1)
       expect(withScope.node.type).toBe('WithStatement')
     })

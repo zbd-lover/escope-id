@@ -22,7 +22,8 @@ export type ScopeNode = Program |
   ForOfStatement |
   CatchClause |
   WithStatement |
-  SwitchStatement
+  SwitchStatement |
+  Class
 
 export interface IdentifierInScope {
   name: string,
@@ -31,54 +32,20 @@ export interface IdentifierInScope {
   hoisted: boolean
 }
 
-export type ClassMetaDefinitonType = 'property' | 'method' | 'get' | 'set' | 'constructor'
+export class Scope {
+  public readonly node: ScopeNode
+  public readonly parent: Scope | null
+  public readonly children: Scope[]
+  /** @readonly */
+  public identifiers: IdentifierInScope[]
 
-export interface ClassMetaDefiniton {
-  name: string,
-  static: boolean,
-  type: ClassMetaDefinitonType
-}
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-class Area<N, P extends Area<any, any, any>, C extends Area<any, any, any>> {
-  public readonly node: N
-  public readonly parent: P | null
-  public readonly children: C[]
-
-  constructor (parent: P | null, node: N) {
+  constructor (parent: (Scope | null), node: ScopeNode) {
     this.node = node
     this.parent = parent
     if (parent) {
       parent.children.push(this)
     }
     this.children = []
-  }
-
-  /** @internal */
-  public finalize () {
-    for (const childScope of this.children) {
-      childScope.finalize()
-    }
-  }
-
-  public acquire (node: Node): Area<N, P, C> | null {
-    if (this.node === node) return this
-    for (const child of this.children) {
-      const ret = child.acquire(node)
-      if (ret) {
-        return ret
-      }
-    }
-    return null
-  }
-}
-
-export class Scope extends Area<ScopeNode, Scope | ClassDefiniton, Scope | ClassDefiniton> {
-  /** @readonly */
-  public identifiers: IdentifierInScope[]
-
-  constructor (parent: (Scope | ClassDefiniton | null), node: ScopeNode) {
-    super(parent, node)
     this.identifiers = []
   }
 
@@ -139,28 +106,13 @@ export class Scope extends Area<ScopeNode, Scope | ClassDefiniton, Scope | Class
     // 但实际上我们可以确定这些标识符的类型为'function'或'class'
     unknownIds.forEach((id) => {
       // eslint-disable-next-line @typescript-eslint/no-this-alias
-      let baseScope: Scope | ClassDefiniton | null = this
+      let baseScope: Scope | null = this
       while (baseScope) {
         const node = baseScope.node
         if (node.type === 'FunctionExpression') {
-          /**
-           * 类的成员方法或者set和get也会形成作用域，且相应node的类型为FunctionExpression
-           * 这种情况下，和边界情况1很相似，但并不一样，应进行忽略
-           * const a = class A {
-           *  method() {
-           *    method(); // 它应该在当前以及祖先作用域中寻找被定义的method变量，而不是相当于'this.method()'
-           *  }
-           * }
-           */
-          const parentScope = baseScope.parent
-          if (!(parentScope &&
-            parentScope instanceof ClassDefiniton &&
-            parentScope.find(id.name))
-          ) {
-            if (node.id?.name === id.name) {
-              id.type = 'function'
-              break
-            }
+          if (node.id?.name === id.name) {
+            id.type = 'function'
+            break
           }
         } else if (node.type === 'ClassExpression') {
           if (node.id?.name === id.name) {
@@ -173,7 +125,20 @@ export class Scope extends Area<ScopeNode, Scope | ClassDefiniton, Scope | Class
       }
     })
 
-    super.finalize()
+    for (const childScope of this.children) {
+      childScope.finalize()
+    }
+  }
+
+  public acquire (node: Node): Scope | null {
+    if (this.node === node) return this
+    for (const child of this.children) {
+      const ret = child.acquire(node)
+      if (ret) {
+        return ret
+      }
+    }
+    return null
   }
 
   public where (name: string) {
@@ -187,34 +152,16 @@ export class Scope extends Area<ScopeNode, Scope | ClassDefiniton, Scope | Class
   }
 }
 
-export class ClassDefiniton extends Area<Class, Scope, Scope> {
-  public definitions: ClassMetaDefiniton[]
+export function createScopeMap (scope: Scope) {
+  const map = new WeakMap<Node, Scope>()
 
-  constructor (parent: Scope | null, node: Class) {
-    super(parent, node)
-    this.definitions = []
-  }
-
-  public find (name: string, type?: ClassMetaDefinitonType, _static?: boolean) {
-    _static = !!_static
-    return this.definitions.find((def) => {
-      return def.name === name &&
-        (type ? def.type === type : true) &&
-        (def.static === _static)
-    }) || null
-  }
-}
-
-export function createAreaMap (area: Scope | ClassDefiniton) {
-  const map = new WeakMap<Node, Scope | ClassDefiniton>()
-
-  function record (area: Scope | ClassDefiniton) {
+  function record (area: Scope) {
     map.set(area.node, area)
     for (const child of area.children) {
       record(child)
     }
   }
-  record(area)
+  record(scope)
 
   return function acquire (node: Node) {
     return map.get(node) || null

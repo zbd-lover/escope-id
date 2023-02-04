@@ -1,4 +1,4 @@
-import { Scope, type IdentifierInScope } from '../../src'
+import { type IdentifierInScope } from '../../src'
 import { analyzeScript } from './helpers/analyze'
 
 describe('with语句', () => {
@@ -23,7 +23,7 @@ describe('with语句', () => {
 
   test('不分析with语句中的标识符以及作用域', () => {
     const topScope = analyzeScript('with(a) { const var1 = 10; function fn1() {} };')
-    const withScope = topScope.children[0] as Scope
+    const withScope = topScope.children[0]
     expect(withScope.children.length).toBe(0)
     expect(withScope.identifiers.length).toBe(0)
   })

@@ -1,6 +1,6 @@
 {
   "name": "escope-id",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Analyze the definition of identifier based on estree",
   "main": "lib/escope-id.js",
   "unpkg": "dist/escope-id.js",

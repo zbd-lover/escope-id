@@ -1,4 +1,4 @@
-import { ClassDefiniton, createAreaMap, IdentifierInScope, Scope } from '../scope'
+import { createScopeMap, type IdentifierInScope } from '../scope'
 import { analyzeModule, analyzeScript } from './helpers/analyze'
 
 describe('测试核心类：Scope', () => {
@@ -15,7 +15,7 @@ describe('测试核心类：Scope', () => {
     expect(topScope.where('a')).toBe('local')
     expect(topScope.where('A')).toBe('local')
     expect(topScope.where('console')).toBe('global')
-    const fnScope = topScope.children[0] as Scope
+    const fnScope = topScope.children[0]
     expect(fnScope.where('arg')).toBe('local')
     expect(fnScope.where('a')).toBe('ancestral')
   })
@@ -41,7 +41,7 @@ describe('测试核心类：Scope', () => {
         }
       `
       const topScope = analyzeModule(script)
-      const fnScope = topScope.children[2] as Scope
+      const fnScope = topScope.children[2]
       expect(fnScope.identifiers).toEqual([
         {
           name: 'a',
@@ -90,7 +90,7 @@ describe('测试核心类：Scope', () => {
       }
     `
       const topScope = analyzeScript(script)
-      const fnScope = topScope.children[0] as Scope
+      const fnScope = topScope.children[0]
       expect(fnScope.identifiers).toEqual([
         {
           name: 'A',
@@ -115,7 +115,7 @@ describe('测试核心类：Scope', () => {
     `
       const topScope = analyzeScript(script)
       const classDef = topScope.children[0]
-      const [fnScope0, fnScope1] = classDef.children as Scope[]
+      const [fnScope0, fnScope1] = classDef.children
       expect(fnScope0.identifiers).toEqual([
         {
           name: 'A',
@@ -136,38 +136,12 @@ describe('测试核心类：Scope', () => {
   })
 })
 
-describe('测试核心类：ClassDefintion', () => {
-  test('测试方法：find', () => {
-    const script = `
-      class A {
-        constructor() {}
-        static prop1 = 10;
-        prop1 = 10;
-        get value() { return 1 }
-        set value(v) {}
-        method() {}
-        static method() {}
-      }
-    `
-    const topScope = analyzeScript(script)
-    const classDef = topScope.children[0] as ClassDefiniton
-    expect(classDef.find('constructor', 'constructor')).not.toBeNull()
-    expect(classDef.find('prop1', 'property')).not.toBeNull()
-    expect(classDef.find('prop1', 'property', true)).not.toBeNull()
-    expect(classDef.find('method', 'method')).not.toBeNull()
-    expect(classDef.find('method', 'method', true)).not.toBeNull()
-    expect(classDef.find('value', 'get')).not.toBeNull()
-    expect(classDef.find('value', 'set')).not.toBeNull()
-    expect(classDef.find('test')).toBeNull()
-  })
-})
-
-test('测试工具函数：createAreaMap', () => {
+test('测试工具函数：createScopeMap', () => {
   const script = 'const a = 10; function A(arg) { a }; console.log(a)'
   const topScope = analyzeScript(script)
   const node1 = topScope.node
   const node2 = topScope.children[0].node
-  const acquire = createAreaMap(topScope)
+  const acquire = createScopeMap(topScope)
   expect(acquire(node1)).toBe(topScope)
   expect(acquire(node2)).toBe(topScope.children[0])
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import * as ESTree from 'estree'
 import { traverse, type VisitorKeys } from 'estraverse'
-import { Scope, ClassDefiniton, type IdentifierInScope, IdType, ClassMetaDefiniton, ClassMetaDefinitonType } from './scope'
+import { Scope, type IdType } from './scope'
 
 function isFunctionNode (node: ESTree.Node): node is ESTree.Function {
   return node.type === 'FunctionDeclaration' || node.type === 'FunctionExpression' || node.type === 'ArrowFunctionExpression'
@@ -25,25 +25,18 @@ export default function analyze (node: ESTree.Program) {
   let inPatternCtx = false
   let currentVarKind: 'let' | 'var' | 'const' | null = null
 
-  let currentType: IdType | ClassMetaDefinitonType = 'unknown'
-  function setCurrentType (type: IdType | ClassMetaDefinitonType) {
-    currentType = type
+  let currentIdType: IdType = 'unknown'
+  function setCurrentIdType (type: IdType) {
+    currentIdType = type
   }
-  function consumeCurrentType () {
-    const ret = currentType
-    currentType = 'unknown'
+  function consumeCurrentIdType () {
+    const ret = currentIdType
+    currentIdType = 'unknown'
     return ret
   }
 
-  let currentArea: Scope | ClassDefiniton = new Scope(null, node)
-  const rootArea = currentArea
-  function pushElToCurrentArea (el: IdentifierInScope | ClassMetaDefiniton) {
-    if (currentArea instanceof Scope) {
-      currentArea.identifiers.push(el as IdentifierInScope)
-    } else {
-      currentArea.definitions.push(el as ClassMetaDefiniton)
-    }
-  }
+  const rootScope = new Scope(null, node)
+  let currentScope = rootScope
 
   traverse(node, {
     keys,
@@ -82,11 +75,11 @@ export default function analyze (node: ESTree.Program) {
           parent.type === 'SwitchCase'
         ))
       ) {
-        currentArea = new Scope(currentArea, node)
+        currentScope = new Scope(currentScope, node)
       } else if (node.type === 'ClassBody') {
-        currentArea = new ClassDefiniton(currentArea as Scope, parent as ESTree.Class)
+        currentScope = new Scope(currentScope as Scope, parent as ESTree.Class)
       } else if (node.type == 'BlockStatement' && parent.type === 'WithStatement') {
-        currentArea = new Scope(currentArea, parent)
+        currentScope = new Scope(currentScope, parent)
         this.skip()
         return
       }
@@ -96,22 +89,16 @@ export default function analyze (node: ESTree.Program) {
         node.type === 'ImportSpecifier' ||
         node.type === 'ImportNamespaceSpecifier'
       ) {
-        setCurrentType('import')
-      } else if (node.type === 'PropertyDefinition') {
-        if (!node.computed) {
-          setCurrentType('property')
-        }
-      } else if (node.type === 'MethodDefinition') {
-        setCurrentType(node.kind)
+        setCurrentIdType('import')
       } else if (node.type === 'FunctionDeclaration') {
         if (node.id) {
-          setCurrentType('function')
+          setCurrentIdType('function')
         } else {
           inPatternCtx = true
-          currentArea = new Scope(currentArea, node)
+          currentScope = new Scope(currentScope, node)
         }
       } else if (node.type === 'ClassDeclaration' && node.id) {
-        setCurrentType('class')
+        setCurrentIdType('class')
       } else if (
         node.type === 'FunctionExpression' ||
         node.type === 'ArrowFunctionExpression' ||
@@ -125,11 +112,12 @@ export default function analyze (node: ESTree.Program) {
           (parent.type === 'MemberExpression' && parent.property === node && !parent.computed) ||
           (parent.type === 'FunctionExpression' && parent.id === node) ||
           (parent.type === 'ClassExpression' && (parent.id === node)) ||
-          (parent.type === 'PropertyDefinition' && parent.key === node && parent.computed)
+          (parent.type === 'MethodDefinition' && parent.key === node && !parent.computed) ||
+          (parent.type === 'PropertyDefinition' && parent.key === node && !parent.computed)
         )
         if (shouldSkip) return
 
-        let type: IdType | ClassMetaDefinitonType = 'unknown'
+        let type: IdType = 'unknown'
         if (inPatternCtx) {
           if (
             (isFunctionNode(parent) && parent.params.some((param) => param === node)) ||
@@ -144,34 +132,25 @@ export default function analyze (node: ESTree.Program) {
             let i = parents.length
             while (--i > 0) {
               if (parents[i].type === 'VariableDeclarator') {
-                setCurrentType('variable')
+                setCurrentIdType('variable')
                 break
               } else if (isFunctionNode(parents[i]) || parents[i].type === 'CatchClause') {
-                setCurrentType('argument')
+                setCurrentIdType('argument')
                 break
               }
             }
           }
         }
 
-        type = consumeCurrentType()
-        const inClassCtx = parent.type === 'PropertyDefinition' || parent.type === 'MethodDefinition'
-        if (inClassCtx) {
-          pushElToCurrentArea({
-            name: node.name,
-            type,
-            static: parent.static,
-          } as ClassMetaDefiniton)
-        } else {
-          const local = type !== 'unknown'
-          const hoisted = type === 'function' || (type === 'variable' && currentVarKind === 'var')
-          pushElToCurrentArea({
-            type,
-            name: node.name,
-            local,
-            hoisted
-          } as IdentifierInScope)
-        }
+        type = consumeCurrentIdType()
+        const local = type !== 'unknown'
+        const hoisted = type === 'function' || (type === 'variable' && currentVarKind === 'var')
+        currentScope.identifiers.push({
+          type,
+          name: node.name,
+          local,
+          hoisted
+        })
       }
     },
 
@@ -184,12 +163,12 @@ export default function analyze (node: ESTree.Program) {
         (node.type === 'ArrowFunctionExpression' && node.expression)
       ) {
         inPatternCtx = false
-        currentArea = currentArea!.parent!
+        currentScope = currentScope!.parent!
       }
 
       if (parent.type === 'SwitchStatement' && parent.discriminant === node) {
         inPatternCtx = false
-        currentArea = new Scope(currentArea, parent)
+        currentScope = new Scope(currentScope, parent)
       }
 
       if (node.type === 'VariableDeclaration') {
@@ -197,7 +176,7 @@ export default function analyze (node: ESTree.Program) {
       } else if (node.type === 'Identifier') {
         if (parent.type === 'FunctionDeclaration' && parent.id === node) {
           inPatternCtx = true
-          currentArea = new Scope(currentArea, parent)
+          currentScope = new Scope(currentScope, parent)
         } else if (parent.type === 'VariableDeclarator' && parent.id === node) {
           inPatternCtx = false
         }
@@ -205,6 +184,6 @@ export default function analyze (node: ESTree.Program) {
     }
   })
 
-  rootArea.finalize()
-  return rootArea
+  rootScope.finalize()
+  return rootScope
 }

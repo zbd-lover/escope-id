@@ -6,10 +6,10 @@
 
 # 导出函数
 ```javascript
-import { analyze, createAreaMap } from 'escope-id';
+import { analyze, createScopeMap } from 'escope-id';
 ```
 ## analyze
-接收一个类型为'Program'的ast结点，构造作用域并分析其中的标识符，或者构造类定义。
+接收一个类型为'Program'的ast结点，构造作用域并分析其中的标识符。
 
 ### 类型
 ```typescript
@@ -44,6 +44,7 @@ interface IdentifierInScope {
 }
 
 type ScopeNode = Program |
+  Class | 
   ESTFunction |
   BlockStatement |
   ForStatement |
@@ -55,8 +56,8 @@ type ScopeNode = Program |
 
 class Scope {
   public readonly node: ScopeNode
-  public readonly parent: Scope | ClassDefinition | null; // 只有根级别的作用域的parent为null
-  public readonly children: (Scope | ClassDefinition)[];
+  public readonly parent: Scope | null; // 只有根级别的作用域的parent为null
+  public readonly children: Scope[];
   /** @readonly */
   public identifiers: IdentifierInScope
 
@@ -70,24 +71,8 @@ class Scope {
    * */
   public where(name: string): 'unknown' | 'local' | 'ancestral' | 'glboal'
 
-  /** 根据一个ast结点来查询相应的作用域或者类定义 */
-  public acquire(node: ScopeNode | Class): Scope | ClassDefintion | null
-}
-
-interface ClassMetaDefiniton {
-  name: string,
-  static: boolean,
-  type: 'property' | 'method' | 'get' | 'set' | 'constructor'
-}
-
-class ClassDefinition {
-  public readonly node: Class
-  public readonly parent: Scope | null;
-  public readonly children: Scope[];
-  public definitions: ClassMetaDefiniton[]
-
-  public find(name: string, type?: string, _static?: boolean): ClassMetaDefiniton | null
-  public acquire(node: ScopeNode | Class): Scope | ClassDefintion | null
+  /** 根据一个ast结点来获取其产生的作用域 */
+  public acquire(node: ScopeNode): Scope | null
 }
 ```
 ### 使用
@@ -103,16 +88,16 @@ console.log(topScope.identifiers)
 // ]
 console.log(topScope.where('console')) // 'global'
 ```
-## createAreaMap
-Scope类的方法acquire和ClassDefintion类的方法acquire的替代品，这两个类的方法是通过遍历子结点来获取目标值的，
-而createAreaMap函数会创建一个映射到目标值的WeakMap，并返回一个函数用于查询，查询速度较快。
+## createScopeMap
+Scope类的方法acquire的替代品，该法会通过遍历子结点来获取目标值，
+而createScopeMap函数会创建一个映射到目标值的WeakMap，并返回一个函数用于查询，查询速度较快。
 ### 使用
 ```javascript
 import { parse } from 'acorn';
-import { createAreaMap } from 'escope-id';
+import { createScopeMap } from 'escope-id';
 const script = 'const a = 10; console.log(a)';
 const topScope = analyze(parse(script))
 const program = topScope.node
-const acquire = createAreaMap(topScope)
+const acquire = createScopeMap(topScope)
 console.log(acquire(program) === topScope) // true
 ```
